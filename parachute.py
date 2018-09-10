@@ -20,7 +20,7 @@ class Either:
         return text
 
 
-def argcheck(function: Callable) -> Callable:
+def argchecked(function: Callable) -> Callable:
     """
     Decorator that validates function calls (and default argument values)
     against argument annotations.

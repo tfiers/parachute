@@ -2,12 +2,12 @@ import inspect
 import typing
 
 from typing import Tuple
-from parachute import argcheck, Either
+from parachute import argchecked, Either
 
 import pytest
 
 
-@argcheck
+@argchecked
 def my_function(
     a: Either("xx", bool), b: str = "bb", c: Tuple[float, float] = (4.0, 4)
 ):
