@@ -13,5 +13,8 @@ setup(
     license="GPL-3.0",
     install_requires=("typeguard"),
     tests_require=("pytest"),
-    packages=find_packages(),
+    # Why it is sane to put Python source code in a `src` dir:
+    # https://blog.ionelmc.ro/2014/05/25/python-packaging/
+    packages=find_packages("src"),
+    package_dir={"": "src"},
 )

@@ -2,7 +2,7 @@ import inspect
 import typing
 
 from typing import Tuple
-from parachute import argchecked, Either
+from parachute.parachute import argchecked, Either
 
 import pytest
 
