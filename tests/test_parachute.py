@@ -2,16 +2,16 @@ import inspect
 import typing
 
 from typing import Tuple
-from parachute import argchecked, Either
+from parachute import input_validation, Either
 
 import pytest
 
 
-@argchecked
+@input_validation
 def my_function(
     a: Either("xx", bool), b: str = "bb", c: Tuple[float, float] = (4.0, 4)
 ):
-    pass
+    return a
 
 
 def test_argcheck():
@@ -30,6 +30,12 @@ def test_argcheck():
         my_function("xx", "whatevs", False)
     with pytest.raises(ValueError):
         my_function("xx", "whatevs", ("a", 88))
+
+
+def test_return():
+    assert my_function("xx") == "xx"
+    assert my_function(True) == True
+    assert my_function(True, "bb") == True
 
 
 @pytest.mark.xfail

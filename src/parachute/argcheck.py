@@ -8,7 +8,7 @@ from .util import _repr
 from .types import Either
 
 
-def argchecked(function: Callable) -> Callable:
+def input_validation(function: Callable) -> Callable:
     """
     Decorator that validates function calls (and default argument values)
     against argument annotations.
@@ -33,7 +33,7 @@ def argchecked(function: Callable) -> Callable:
     def checked_function(*args, **kwargs):
         for arg_name, value in zip(arg_names, args):
             check_arg(function, arg_name, value)
-        function(*args, **kwargs)
+        return function(*args, **kwargs)
 
     return checked_function
 
