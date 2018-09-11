@@ -9,6 +9,6 @@ pip install https://github.com/tfiers/parachute/archive/master.zip
 ```
 
 
-Contributors
+For contributors
 ------------
 [![Build Status](https://travis-ci.org/tfiers/parachute.svg?branch=master)](https://travis-ci.org/tfiers/parachute)
