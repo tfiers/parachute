@@ -1,4 +1,3 @@
-import typeguard
 import inspect
 
 from typing import Callable, Any
@@ -9,7 +8,7 @@ from .util import _repr, matches_type
 from .spec import Spec
 
 
-def validate(value: Any, annotation: Any) -> bool:
+def validate(value, annotation) -> bool:
     """
     Checks whether a value matches a type hint / annotation.
     """
@@ -24,17 +23,8 @@ def validate(value: Any, annotation: Any) -> bool:
 
 def input_validation(function: Callable) -> Callable:
     """
-    Decorator that validates function call arguments (and default arguments)
-    against argument annotations.
-
-    Allows both type checking and basic 'option matching'. Example syntax:
-
-        @validated
-        def my_function(
-            first_argument: Callable,
-            other_argument: str = "Default",
-            last_argument: Either("auto", bool) = "auto",
-        )
+    Decorator that validates function call arguments (and default argument
+    values) against argument annotations / type hints.
     """
     spec = inspect.getfullargspec(function)
     # According to the Python FAQ, the proper name for "argument name" is
@@ -69,6 +59,7 @@ def check_arg(function: Callable, arg_name: str, value: Any) -> None:
 
 @dataclass
 class ArgumentError(Exception):
+    """ Raised when a function is called with an invalid argument. """
 
     function: Callable
     arg_name: str
