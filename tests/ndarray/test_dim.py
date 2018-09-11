@@ -1,23 +1,23 @@
-from parachute import DimensionSizeSpec
+from parachute import DimSize
 
 
 def test_dimspec_any():
-    s = DimensionSizeSpec(None)
-    assert not s.conforms("not a dimspec")
-    assert not s.conforms(None)
-    assert not s.conforms(DimensionSizeSpec)
-    assert s.conforms(4)
-    assert s.conforms(42098507180)
-    assert s.conforms(False)
-    assert s.conforms(True)
+    s = DimSize(None)
+    assert not s.validate("not a dimspec")
+    assert not s.validate(None)
+    assert not s.validate(DimSize)
+    assert s.validate(4)
+    assert s.validate(42098507180)
+    assert s.validate(False)
+    assert s.validate(True)
 
 
 def test_dimspec_concrete():
-    s = DimensionSizeSpec(4)
-    assert not s.conforms("not a dimspec")
-    assert not s.conforms(None)
-    assert not s.conforms(DimensionSizeSpec)
-    assert s.conforms(4)
-    assert not s.conforms(42098507180)
-    assert not s.conforms(False)
-    assert not s.conforms(True)
+    s = DimSize(4)
+    assert not s.validate("not a dimspec")
+    assert not s.validate(None)
+    assert not s.validate(DimSize)
+    assert s.validate(4)
+    assert not s.validate(42098507180)
+    assert not s.validate(False)
+    assert not s.validate(True)

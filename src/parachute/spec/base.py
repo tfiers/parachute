@@ -1,55 +1,85 @@
 from dataclasses import dataclass
-from typing import Any
-from ..util import is_literal, matches_type, _repr
+from typing import Any, Tuple, TypeVar
+from abc import ABC, abstractmethod
+
+from ..util import is_literal, is_of_type, _repr
+
+
+Spec = TypeVar("GenericSpec")
+Type = TypeVar("GenericType")
 
 
 @dataclass
-class Spec:
+class Validator(ABC):
     """
-    Base class for argument validation specifications.
+    Base class for type and spec validators.
     """
 
-    # Subclasses may set `type_` to something more strict than `Any`. When
-    # `spec.conforms(value)` is called, the `value` will be checked against
-    # `spec._type`.
-    type_: type = Any
+    # Specification to check value against (see subclasses for examples).
+    _spec: Spec
 
-    def conforms(self, value: Any) -> bool:
-        """ Whether a value conforms to this spec """
-        return self.type_conforms(value) and self.value_conforms(value)
+    # Type to check value against.
+    # Subclasses may set this to something more strict than `Any`.
+    _type: Type = Any
 
-    def type_conforms(self, value: Any) -> bool:
-        return matches_type(value, self.type_)
+    def validate(self, value: Any) -> bool:
+        """ Whether a value conforms to this validator's _type and _spec """
+        return self._valid_type(value) and self._check_spec(value)
 
-    def value_conforms(self, value) -> bool:
-        """ To be overridden by subclasses """
+    def _valid_type(self, value: Any) -> bool:
+        return is_of_type(value, self._type)
+
+    @abstractmethod
+    def _check_spec(self, value: Type) -> bool:
+        pass
+
+
+class TypeValidator(Validator):
+    """
+    A dummy validator that only checks the type of the argument.
+    """
+
+    def __init__(self, _type: Type):
+        self._type = _type
+        self._spec = None
+
+    def _check_spec(self, value):
         return True
 
 
-class Either(Spec):
-    def __init__(self, *options):
-        self.options = options
+Options = Tuple[Any, ...]
+
+
+class Either(Validator):
+    """
+    Any choice out of a list of options is valid.
+    """
+
+    _spec: Options
+
+    def __post_init__(self):
         if self._homogenous_type():
-            self.type_ = type(options[0])
+            self._type = type(self._spec[0])
         else:
-            # Actually
-            self.type_ = Any
+            # Actually a Union
+            self._type = Any
 
     def _homogenous_type(self) -> bool:
-        first_type = type(self.options[0])
-        return all(type(option) == first_type for option in self.options)
+        """ Whether all options are of the same type. """
+        first_type = type(self._spec[0])
+        return all(type(option) == first_type for option in self._spec)
 
-    def value_conforms(self, value: Any) -> bool:
+    def _check_spec(self, value: Any) -> bool:
         return any(
-            self._option_conforms(value, option) for option in self.options
+            self._valid_for_option(value, option) for option in self._spec
         )
 
-    def _option_conforms(self, value: Any, option: Any) -> bool:
+    def _valid_for_option(self, value: Any, option: Any) -> bool:
         if is_literal(option):
             return value == option
         else:
-            return matches_type(value, option)
+            return is_of_type(value, option)
 
     def __repr__(self) -> str:
-        option_text = ", ".join(_repr(option) for option in self.options)
+        option_text = ", ".join(_repr(option) for option in self._spec)
         return f"Either({option_text})"

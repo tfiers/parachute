@@ -6,26 +6,26 @@ from parachute import Either
 
 def test_either():
     s = Either("a", "b")
-    assert s.conforms("a")
-    assert s.conforms("b")
-    assert not s.conforms("c")
-    assert not s.conforms(44)
+    assert s.validate("a")
+    assert s.validate("b")
+    assert not s.validate("c")
+    assert not s.validate(44)
 
 
 def test_either_multitype():
     s = Either("a", bool)
-    assert s.conforms("a")
-    assert s.conforms(True)
-    assert s.conforms(False)
-    assert not s.conforms("b")
-    assert not s.conforms("c")
-    assert not s.conforms(44)
+    assert s.validate("a")
+    assert s.validate(True)
+    assert s.validate(False)
+    assert not s.validate("b")
+    assert not s.validate("c")
+    assert not s.validate(44)
 
 
 def test_either_complextypes():
     s = Either("a", Union[bool, str])
-    assert s.conforms("a")
-    assert s.conforms("b")
-    assert s.conforms("whatevs")
-    assert s.conforms(True)
-    assert not s.conforms(44)
+    assert s.validate("a")
+    assert s.validate("b")
+    assert s.validate("whatevs")
+    assert s.validate(True)
+    assert not s.validate(44)

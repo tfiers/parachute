@@ -1,9 +1,9 @@
 import pytest
 import numpy as np
 
-from parachute import TensorSpec
+from parachute import Tensor
 
 
 def test_tensorspec_any():
-    t = TensorSpec()
+    t = Tensor()
     assert True

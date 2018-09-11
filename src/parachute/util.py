@@ -23,19 +23,19 @@ def is_type(value: Any) -> bool:
     )
 
 
-def matches_type(value: Any, expected_type) -> bool:
+def is_of_type(value: Any, type_) -> bool:
     """
-    Whether a value is of a given type.
+    Returns whether a value is of a given type.
     """
-    if not is_type(expected_type):
+    # The type needs to be a type (yo dawg)
+    if not is_type(type_):
         raise TypeError
     # For actual type checking, defer to the "typeguard" package:
     try:
-        typeguard.check_type("", value, expected_type)
-        valid = True
+        typeguard.check_type("", value, expected_type=type_)
+        return True
     except TypeError:
-        valid = False
-    return valid
+        return False
 
 
 def make_docstring(function: Callable):

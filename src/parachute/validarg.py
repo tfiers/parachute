@@ -4,21 +4,20 @@ from typing import Callable, Any
 from functools import wraps
 from dataclasses import dataclass
 
-from .util import _repr, matches_type
-from .spec.base import Spec
+from .util import _repr, is_of_type
+from .spec.base import Validator
 
 
-def validate(value, annotation) -> bool:
+def is_valid(value, annotation) -> bool:
     """
     Checks whether a value matches a type hint / annotation.
     """
     if annotation is None:
-        valid = True
-    elif isinstance(annotation, Spec):
-        valid = annotation.validate(value)
+        return True
+    elif isinstance(annotation, Validator):
+        return annotation.validate(value)
     else:
-        valid = matches_type(value, annotation)
-    return valid
+        return is_of_type(value, annotation)
 
 
 def input_validation(function: Callable) -> Callable:
@@ -52,8 +51,7 @@ def check_arg(function: Callable, arg_name: str, value: Any) -> None:
     corresponding type hint / annotation.
     """
     annotation = function.__annotations__.get(arg_name)
-    valid = validate(value, annotation)
-    if not valid:
+    if not is_valid(value, annotation):
         raise ArgumentError(function, arg_name, value)
 
 
