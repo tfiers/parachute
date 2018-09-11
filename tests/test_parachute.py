@@ -11,6 +11,7 @@ def my_function(
     return a
 
 
+@pytest.mark.skip
 def test_argcheck():
     my_function("xx")
     my_function(False)
@@ -29,12 +30,14 @@ def test_argcheck():
         my_function("xx", "whatevs", ("a", 88))
 
 
+@pytest.mark.skip
 def test_return():
     assert my_function("xx") == "xx"
     assert my_function(True) == True
     assert my_function(True, "bb") == True
 
 
+@pytest.mark.skip
 def test_kwargs():
     my_function(a="xx")
     my_function(a=False)

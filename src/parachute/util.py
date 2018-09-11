@@ -54,6 +54,15 @@ def _trim_lines(string: str):
     return "\n".join(lines)
 
 
+def matches_type(value: Any, expected_type: type) -> bool:
+    try:
+        typeguard.check_type("", value, expected_type)
+        valid = True
+    except TypeError:
+        valid = False
+    return valid
+
+
 def _repr(x: Any) -> str:
     """
     Formats a literal or a type annotation for pretty printing.

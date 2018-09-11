@@ -5,24 +5,21 @@ from typing import Callable, Any
 from functools import wraps
 from dataclasses import dataclass
 
-from .util import _repr
-from .types import Either
+from .util import _repr, matches_type
+from .spec import Spec
 
 
-@dataclass
-class ArgumentError(Exception):
-
-    function: Callable
-    arg_name: str
-    value: Any
-
-    def __repr__(self) -> str:
-        annotation = self.function.__annotations__.get(self.arg_name)
-        return (
-            f"{self.arg_name} (of {self.function.__name__})\n"
-            f"should match {_repr(annotation)}, but got "
-            f"{_repr(self.value)} (of type {_repr(type(self.value))}) instead."
-        )
+def validate(value: Any, annotation: Any) -> bool:
+    """
+    Checks whether a value matches a type hint / annotation.
+    """
+    if annotation is None:
+        valid = True
+    elif isinstance(annotation, Spec):
+        valid = annotation.validate(value)
+    else:
+        valid = matches_type(value, annotation)
+    return valid
 
 
 def input_validation(function: Callable) -> Callable:
@@ -70,21 +67,17 @@ def check_arg(function: Callable, arg_name: str, value: Any) -> None:
         raise ArgumentError(function, arg_name, value)
 
 
-def validate(value: Any, annotation: Any) -> bool:
-    """
-    Checks whether a value matches a type hint / annotation.
-    """
-    if annotation is None:
-        valid = True
-    elif type(annotation) == Either:
-        valid = any(validate(value, option) for option in annotation.options)
-    elif type(annotation) == str:
-        # A "literal" type hint
-        valid = value == annotation
-    else:
-        try:
-            typeguard.check_type("", value, annotation)
-            valid = True
-        except TypeError:
-            valid = False
-    return valid
+@dataclass
+class ArgumentError(Exception):
+
+    function: Callable
+    arg_name: str
+    value: Any
+
+    def __repr__(self) -> str:
+        annotation = self.function.__annotations__.get(self.arg_name)
+        return (
+            f"{self.arg_name} (of {self.function.__name__})\n"
+            f"should match {_repr(annotation)}, but got "
+            f"{_repr(self.value)} (of type {_repr(type(self.value))}) instead."
+        )
