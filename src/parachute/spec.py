@@ -5,60 +5,64 @@ from typing import Tuple, Any, Union
 from .util import is_literal, matches_type, _repr
 
 
+@dataclass
 class Spec:
-    def __init__(self, output_type: type = Any):
-        self.output_type = output_type
+    """
+    Base class for argument validation specifications.
+    """
+
+    # Subclasses may set `type_` to a more stricter type than `Any`. When
+    # `spec.conforms(value)` is called, the value will be checked against this
+    # type.
+    type_: type = Any
 
     def conforms(self, value: Any) -> bool:
         """ Whether a value conforms to this spec. """
         return self.type_conforms(value) and self.value_conforms(value)
 
     def type_conforms(self, value: Any) -> bool:
-        return matches_type(value, self.output_type)
+        return matches_type(value, self.type_)
 
     def value_conforms(self, value) -> bool:
-        # type(value) == self.output_type
         return True
 
 
 class Either(Spec):
     def __init__(self, *options):
         self.options = options
-        typo_0 = type(options[0])
-        if all(type(option) == typo_0 for option in options):
-            self.output_type = typo_0
+        if self._homogenous_type():
+            self.type_ = type(options[0])
         else:
             # Actually a Union
-            self.output_type = Any
+            self.type_ = Any
+
+    def _homogenous_type(self) -> bool:
+        first_type = type(self.options[0])
+        return all(type(option) == first_type for option in self.options)
+
+    def value_conforms(self, value: Any) -> bool:
+        return any(
+            self._option_conforms(value, option) for option in self.options
+        )
+
+    def _option_conforms(self, value: Any, option: Any) -> bool:
+        if is_literal(option):
+            return value == option
+        else:
+            return matches_type(value, option)
 
     def __repr__(self) -> str:
         option_text = ", ".join(_repr(option) for option in self.options)
-        text = f"Either({option_text})"
-        return text
-
-    def value_conforms(self, value: Any) -> bool:
-        # conforms = any(validate(value, option) for option in annotation.options)
-        conforms = any(
-            self.option_conforms(value, option) for option in self.options
-        )
-        return conforms
-
-    def option_conforms(self, value: Any, option: Any) -> bool:
-        if is_literal(option):
-            conforms = value == option
-        else:
-            conforms = matches_type(value, option)
-        return conforms
+        return f"Either({option_text})"
 
 
-# These Optionals must become Eithers
 DimensionSize = int
 Shape = Tuple[DimensionSize, ...]
 
 
 class DimensionSizeSpec(Spec):
     def __init__(self, dimsize=None):
-        self.output_type = DimensionSize
+        self.type_ = DimensionSize
         self.dimsize = dimsize
 
     def value_conforms(self, value: DimensionSize):
@@ -71,7 +75,7 @@ class DimensionSizeSpec(Spec):
 
 class ShapeSpec(Spec):
     def __init__(self, shape=None):
-        self.output_type = Shape
+        self.type_ = Shape
         self.shape = shape
 
     def value_conforms(self, value: Shape):
