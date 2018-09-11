@@ -42,60 +42,6 @@ class ShapeSpec(Spec):
         return conforms
 
 
-DTypeSpec = Either(
-    int,
-    float,
-    complex,
-    np.dtype(np.uint),
-    np.dtype(int),
-    np.dtype(float),
-    np.dtype(complex),
-)
-
-
 @dataclass
-class TensorSpec:
-
-    shape_spec: ShapeSpec
-    dtype_spec: DTypeSpec
-
-    def validate(self, value: Any) -> bool:
-        try:
-            # Normalise tuples, lists, lists of tuples, etc. to ndarrays.
-            other = np.array(value, dtype=self.dtype_spec)
-        except ValueError:
-            conforms = False
-        except TypeError:
-            conforms = False
-        else:
-            valid_dtype = self._valid_dtype(other.dtype)
-            valid_shape = matches_type(self.shape_spec, other.shape)
-            conforms = valid_dtype and valid_shape
-        return conforms
-
-    def _valid_dtype(self, dtype: np.dtype) -> bool:
-        if self.dtype_spec is None:
-            conforms = True
-        else:
-            conforms = np.dtype(self.dtype_spec) == dtype
-        return conforms
-
-
-def tensor(shape: ShapeSpec = None, dtype: DTypeSpec = float) -> np.ndarray:
-    spec = TensorSpec(shape, dtype)
-    return spec
-
-
-def scalar(dtype: DTypeSpec = float):
-    return tensor(shape=(), dtype=dtype)
-
-
-def vector(length: DimensionSizeSpec = Any, dtype: DTypeSpec = float):
-    return tensor(shape=(length,), dtype=dtype)
-
-
-def matrix(
-    shape: Tuple[DimensionSizeSpec, DimensionSizeSpec] = (Any, Any),
-    dtype: DTypeSpec = float,
-):
-    return tensor(shape=shape, dtype=dtype)
+class TensorSpec(Spec):
+    tensor_spec = None
