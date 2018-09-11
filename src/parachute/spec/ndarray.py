@@ -15,37 +15,39 @@ ShapeType = Tuple[DimSizeType, ...]
 ShapeSpec = Union[Tuple[DimSizeSpec, ...], Arbitrary]
 
 
-@dataclass
 class DimSize(Validator):
-
-    _spec: DimSizeSpec = Arbitrary
-    _type = DimSizeType
+    def __init__(self, _spec: DimSizeSpec = Arbitrary):
+        self._spec = _spec
+        self._type = DimSizeType
 
     def _check_spec(self, value: DimSizeType):
-        return value == self._spec
+        if self._spec is Arbitrary:
+            return True
+        else:
+            return value == self._spec
 
 
-@dataclass
 class Shape(Validator):
-    _spec: ShapeSpec = Arbitrary
-    _type = ShapeType
+    def __init__(self, _spec: ShapeSpec = Arbitrary):
+        self._spec = _spec
+        self._type = ShapeType
 
     def _check_spec(self, value: ShapeType):
         if self._spec is Arbitrary:
-            conforms = True
+            return True
         elif len(value) != len(self._spec):
-            conforms = False
+            return False
         else:
-            conforms = all(
+            return all(
                 DimSize(dimsize_spec).validate(dimsize)
                 for (dimsize_spec, dimsize) in zip(self._spec, value)
             )
-        return conforms
 
 
-@dataclass
 class Tensor(Validator):
-    _spec = Arbitrary
+    def __init__(self, _spec=Arbitrary):
+        self._spec = _spec
+        self._type = Any
 
     def _check_spec(self, value):
         return True

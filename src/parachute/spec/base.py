@@ -47,17 +47,13 @@ class TypeValidator(Validator):
         return True
 
 
-Options = Tuple[Any, ...]
-
-
 class Either(Validator):
     """
     Any choice out of a list of options is valid.
     """
 
-    _spec: Options
-
-    def __post_init__(self):
+    def __init__(self, *options):
+        self._spec = options
         if self._homogenous_type():
             self._type = type(self._spec[0])
         else:
