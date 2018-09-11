@@ -6,7 +6,7 @@ from ..util import is_literal, matches_type, _repr
 @dataclass
 class Spec:
     """
-    Base class for argument validation specifications
+    Base class for argument validation specifications.
     """
 
     # Subclasses may set `type_` to something more strict than `Any`. When

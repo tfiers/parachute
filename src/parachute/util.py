@@ -5,21 +5,6 @@ import typeguard
 from typing import Callable, Any
 
 
-def matches_type(value: Any, expected_type) -> bool:
-    """
-    Whether a value is of a given type.
-    """
-    if not is_type(expected_type):
-        raise TypeError
-    # For actual type checking, defer to the "typeguard" package:
-    try:
-        typeguard.check_type("", value, expected_type)
-        valid = True
-    except TypeError:
-        valid = False
-    return valid
-
-
 def is_literal(value: Any) -> bool:
     return not is_type(value)
 
@@ -36,6 +21,21 @@ def is_type(value: Any) -> bool:
         typing._VariadicGenericAlias,
         typing._SpecialForm,
     )
+
+
+def matches_type(value: Any, expected_type) -> bool:
+    """
+    Whether a value is of a given type.
+    """
+    if not is_type(expected_type):
+        raise TypeError
+    # For actual type checking, defer to the "typeguard" package:
+    try:
+        typeguard.check_type("", value, expected_type)
+        valid = True
+    except TypeError:
+        valid = False
+    return valid
 
 
 def make_docstring(function: Callable):

@@ -5,7 +5,7 @@ from functools import wraps
 from dataclasses import dataclass
 
 from .util import _repr, matches_type
-from .spec import Spec
+from .spec.base import Spec
 
 
 def validate(value, annotation) -> bool:

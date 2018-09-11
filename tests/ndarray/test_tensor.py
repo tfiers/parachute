@@ -4,6 +4,11 @@ import numpy as np
 from parachute import vector, TensorSpec
 
 
+# def test_tensorspec_any():
+#     t = TensorSpec()
+#     assert True
+
+
 @pytest.mark.skip
 def test_vector():
     v = vector(2)
