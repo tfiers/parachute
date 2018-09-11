@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 from ..util import is_literal, is_of_type, _repr
 
 
-Spec = TypeVar("GenericSpec")
 Type = TypeVar("GenericType")
 
 
@@ -15,22 +14,16 @@ class Validator(ABC):
     Base class for type and spec validators.
     """
 
-    # Specification to check value against (see subclasses for examples).
-    _spec: Spec
-
     # Type to check value against.
     # Subclasses may set this to something more strict than `Any`.
     _type: Type = Any
 
     def validate(self, value: Any) -> bool:
-        """ Whether a value conforms to this validator's _type and _spec """
-        return self._valid_type(value) and self._check_spec(value)
-
-    def _valid_type(self, value: Any) -> bool:
-        return is_of_type(value, self._type)
+        """ Whether a value conforms to this validator's type and spec """
+        return is_of_type(value, self._type) and self.is_to_spec(value)
 
     @abstractmethod
-    def _check_spec(self, value: Type) -> bool:
+    def is_to_spec(self, value: Type) -> bool:
         pass
 
 
@@ -41,9 +34,8 @@ class TypeValidator(Validator):
 
     def __init__(self, _type: Type):
         self._type = _type
-        self._spec = None
 
-    def _check_spec(self, value):
+    def is_to_spec(self, value):
         return True
 
 
@@ -53,21 +45,21 @@ class Either(Validator):
     """
 
     def __init__(self, *options):
-        self._spec = options
+        self.options = options
         if self._homogenous_type():
-            self._type = type(self._spec[0])
+            self._type = type(self.options[0])
         else:
             # Actually a Union
             self._type = Any
 
     def _homogenous_type(self) -> bool:
         """ Whether all options are of the same type. """
-        first_type = type(self._spec[0])
-        return all(type(option) == first_type for option in self._spec)
+        first_type = type(self.options[0])
+        return all(type(option) == first_type for option in self.options)
 
-    def _check_spec(self, value: Any) -> bool:
+    def is_to_spec(self, value: Any) -> bool:
         return any(
-            self._valid_for_option(value, option) for option in self._spec
+            self._valid_for_option(value, option) for option in self.options
         )
 
     def _valid_for_option(self, value: Any, option: Any) -> bool:
@@ -77,5 +69,5 @@ class Either(Validator):
             return is_of_type(value, option)
 
     def __repr__(self) -> str:
-        option_text = ", ".join(_repr(option) for option in self._spec)
+        option_text = ", ".join(_repr(option) for option in self.options)
         return f"Either({option_text})"

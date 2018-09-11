@@ -13,6 +13,7 @@ setup(
     license="GPL-3.0",
     install_requires=("typeguard"),
     tests_require=("pytest"),
+    python_requires=">= 3.7",
     # The package is in a seemingly redundant `src` dir.
     # Reason: https://blog.ionelmc.ro/2014/05/25/python-packaging/
     package_dir={"": "src"},
