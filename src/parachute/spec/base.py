@@ -11,7 +11,7 @@ Type = TypeVar("GenericType")
 @dataclass
 class Validator(ABC):
     """
-    Base class for type and spec validators.
+    Base class for argument validators.
     """
 
     # Type to check value against.
@@ -20,7 +20,10 @@ class Validator(ABC):
 
     def validate(self, value: Any) -> bool:
         """ Whether a value conforms to this validator's type and spec """
-        return is_of_type(value, self._type) and self.is_to_spec(value)
+        return self.is_of_valid_type(value) and self.is_to_spec(value)
+
+    def is_of_valid_type(self, value: Any) -> bool:
+        return is_of_type(value, self._type)
 
     @abstractmethod
     def is_to_spec(self, value: Type) -> bool:
@@ -59,10 +62,11 @@ class Either(Validator):
 
     def is_to_spec(self, value: Any) -> bool:
         return any(
-            self._valid_for_option(value, option) for option in self.options
+            Either._valid_for_option(value, option) for option in self.options
         )
 
-    def _valid_for_option(self, value: Any, option: Any) -> bool:
+    @staticmethod
+    def _valid_for_option(value: Any, option: Any) -> bool:
         if is_literal(option):
             return value == option
         else:

@@ -55,9 +55,19 @@ TensorType = Union[np.ndarray, Scalar, Vector, Matrix]
 
 
 class Tensor(Validator):
-    def __init__(self, shape_spec: ShapeSpec = Arbitrary):
+    def __init__(self, shape_spec: ShapeSpec = Arbitrary, dtype_=Number):
         self.shape_spec = shape_spec
+        self.dtype_ = Number
+        # Only for IDE's; `is_of_valid_type` is overridden.
         self._type = TensorType
 
+    def is_of_valid_type(self, value):
+        """ Checks whether a value can be coerced into a numeric ndarray """
+        try:
+            np.array(value, dtype=complex)
+            return True
+        except (TypeError, ValueError):
+            return False
+
     def is_to_spec(self, value):
-        return True
+        return Shape(self.shape_spec).validate(np.shape(value))
