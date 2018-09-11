@@ -61,32 +61,32 @@ Shape = Tuple[DimensionSize, ...]
 
 
 class DimensionSizeSpec(Spec):
-    def __init__(self, dimsize=None):
+    def __init__(self, dimsize_spec=None):
         self.type_ = DimensionSize
-        self.dimsize = dimsize
+        self.dimsize_spec = dimsize_spec
 
     def value_conforms(self, value: DimensionSize):
-        if self.dimsize is None:
+        if self.dimsize_spec is None:
             conforms = True
         else:
-            conforms = value == self.dimsize
+            conforms = value == self.dimsize_spec
         return conforms
 
 
 class ShapeSpec(Spec):
-    def __init__(self, shape=None):
+    def __init__(self, shape_spec=None):
         self.type_ = Shape
-        self.shape = shape
+        self.shape_spec = shape_spec
 
     def value_conforms(self, value: Shape):
-        if self.shape is None:
+        if self.shape_spec is None:
             conforms = True
-        elif len(value) != len(self.shape):
+        elif len(value) != len(self.shape_spec):
             conforms = False
         else:
             conforms = all(
                 DimensionSizeSpec(dimsize_spec).conforms(dimsize)
-                for (dimsize_spec, dimsize) in zip(self.shape, value)
+                for (dimsize_spec, dimsize) in zip(self.shape_spec, value)
             )
         return conforms
 

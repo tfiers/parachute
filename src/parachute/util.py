@@ -10,7 +10,8 @@ def matches_type(value: Any, expected_type) -> bool:
     Whether a value is of a given type.
     """
     if not is_type(expected_type):
-        raise TypeError("`is_type(expected_type)` was False")
+        raise TypeError
+    # For actual type checking, defer to the "typeguard" package:
     try:
         typeguard.check_type("", value, expected_type)
         valid = True
