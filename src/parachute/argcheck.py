@@ -16,7 +16,7 @@ class ArgumentError(Exception):
     arg_name: str
     value: Any
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         annotation = self.function.__annotations__.get(self.arg_name)
         return (
             f"{self.arg_name} (of {self.function.__name__})\n"
@@ -59,7 +59,7 @@ def input_validation(function: Callable) -> Callable:
     return checked_function
 
 
-def check_arg(function: Callable, arg_name: str, value: Any):
+def check_arg(function: Callable, arg_name: str, value: Any) -> None:
     """
     Displays a helpful error message when a function argument does not match its
     corresponding type hint / annotation.
