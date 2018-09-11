@@ -11,6 +11,7 @@ from .types import Either
 
 @dataclass
 class ArgumentError(Exception):
+
     function: Callable
     arg_name: str
     value: Any

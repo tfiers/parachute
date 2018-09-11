@@ -1,4 +1,5 @@
 import inspect
+import typeguard
 
 from typing import Callable, Any
 
@@ -51,6 +52,15 @@ def make_docstring(function: Callable):
 def _trim_lines(string: str):
     lines = [line.strip() for line in string.splitlines()]
     return "\n".join(lines)
+
+
+def check_type(value: Any, expected_type: type) -> bool:
+    try:
+        typeguard.check_type("", value, expected_type)
+        valid = True
+    except TypeError:
+        valid = False
+    return valid
 
 
 def _repr(x: Any) -> str:
