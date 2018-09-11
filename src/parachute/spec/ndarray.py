@@ -1,10 +1,9 @@
 import numpy as np
 
-from dataclasses import dataclass
-from typing import Tuple, Any, Union, Sequence
+from typing import Tuple, Union, Sequence
 from numbers import Number
 
-from .base import Validator, Either
+from .base import Validator
 
 
 Arbitrary = None
@@ -57,7 +56,7 @@ TensorType = Union[np.ndarray, Scalar, Vector, Matrix]
 class Tensor(Validator):
     def __init__(self, shape_spec: ShapeSpec = Arbitrary, dtype_=Number):
         self.shape_spec = shape_spec
-        self.dtype_ = Number
+        self.dtype_ = dtype_
         # Only for IDE's; `is_of_valid_type` is overridden.
         self._type = TensorType
 
