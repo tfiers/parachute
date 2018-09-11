@@ -1,2 +1,3 @@
-# parachute
-Neat validation of function arguments using Python's annotation system.
+# Parachute
+
+DRY input validation of function calls using Python's type hint system.
