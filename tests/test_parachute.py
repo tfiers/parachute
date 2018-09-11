@@ -35,7 +35,6 @@ def test_return():
     assert my_function(True, "bb") == True
 
 
-@pytest.mark.xfail
 def test_kwargs():
     my_function(a="xx")
     my_function(a=False)
@@ -52,3 +51,7 @@ def test_kwargs():
         my_function(a="xx", b="whatevs", c=False)
     with pytest.raises(ArgumentError):
         my_function(a="xx", b="whatevs", c=("a", 88))
+    with pytest.raises(ArgumentError):
+        my_function("xx", b="whatevs", c=("a", 88))
+    with pytest.raises(ArgumentError):
+        my_function("xx", True, c=("a", 88))

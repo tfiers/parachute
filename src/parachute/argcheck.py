@@ -43,12 +43,15 @@ def input_validation(function: Callable) -> Callable:
     # "parameter".
     arg_names = spec.args
     default_values = spec.defaults
+    # Iterate over arguments in reverse: only the last few parameters have
+    # default values.
     for arg_name, value in zip(reversed(arg_names), reversed(default_values)):
         check_arg(function, arg_name, value)
 
     @wraps(function)
     def checked_function(*args, **kwargs):
-        for arg_name, value in zip(arg_names, args):
+        all_args = args + tuple(kwargs.values())
+        for arg_name, value in zip(arg_names, all_args):
             check_arg(function, arg_name, value)
         return function(*args, **kwargs)
 
