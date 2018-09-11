@@ -2,7 +2,7 @@ import inspect
 import typing
 import typeguard
 
-from typing import Callable, Any
+from typing import Callable, Any, TypeVar
 
 
 def is_literal(value: Any) -> bool:
@@ -23,7 +23,10 @@ def is_type(value: Any) -> bool:
     )
 
 
-def is_of_type(value: Any, type_) -> bool:
+Type = TypeVar("GenericType")
+
+
+def is_of_type(value: Any, type_: Type) -> bool:
     """
     Returns whether a value is of a given type.
     """
@@ -90,7 +93,7 @@ def _trim_lines(string: str):
 
 def _repr(x: Any) -> str:
     """
-    Formats a literal or a type annotation for pretty printing.
+    Formats a literal or a type for pretty printing.
     """
     if type(x) == type:
         text = x.__name__

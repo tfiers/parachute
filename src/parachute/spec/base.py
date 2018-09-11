@@ -2,10 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Tuple, TypeVar
 from abc import ABC, abstractmethod
 
-from ..util import is_literal, is_of_type, _repr
-
-
-Type = TypeVar("GenericType")
+from ..util import is_literal, is_of_type, _repr, Type
 
 
 @dataclass
