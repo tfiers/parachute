@@ -1,7 +1,40 @@
 import inspect
+import typing
 import typeguard
 
 from typing import Callable, Any
+
+
+def matches_type(value: Any, expected_type) -> bool:
+    """
+    Whether a value is of a given type.
+    """
+    if not is_type(expected_type):
+        raise TypeError("`is_type(expected_type)` was False")
+    try:
+        typeguard.check_type("", value, expected_type)
+        valid = True
+    except TypeError:
+        valid = False
+    return valid
+
+
+def is_literal(value: Any) -> bool:
+    return not is_type(value)
+
+
+def is_type(value: Any) -> bool:
+    """
+    Whether a value is a python `type` (such as `bool` or `str`), or one of the
+    types from the `typing` module (such as `Sequence[int]`, `Union[bool, str]`,
+    or `Any`).
+    """
+    return type(value) in (
+        type,
+        typing._GenericAlias,
+        typing._VariadicGenericAlias,
+        typing._SpecialForm,
+    )
 
 
 def make_docstring(function: Callable):
@@ -52,15 +85,6 @@ def make_docstring(function: Callable):
 def _trim_lines(string: str):
     lines = [line.strip() for line in string.splitlines()]
     return "\n".join(lines)
-
-
-def matches_type(value: Any, expected_type: type) -> bool:
-    try:
-        typeguard.check_type("", value, expected_type)
-        valid = True
-    except TypeError:
-        valid = False
-    return valid
 
 
 def _repr(x: Any) -> str:
