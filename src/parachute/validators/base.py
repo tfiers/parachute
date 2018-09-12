@@ -80,10 +80,10 @@ class Optional(Either):
 
     An alternative to Python's `typing.Optional`:
 
-    Python's `typing` package:
+    Syntax with the `typing` package:
         arg_name: Optional[Type] = None
 
-    This class:
+    Syntax with this class:
         arg_name: Optional(Type) = None
 
     Purpose: to have a syntax in line with other validators in this package.

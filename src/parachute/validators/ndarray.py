@@ -3,7 +3,7 @@ import numpy as np
 from typing import Tuple, Union, Sequence
 from numbers import Number
 
-from .base import Validator
+from .base import Validator, Either
 
 
 Arbitrary = None
@@ -97,3 +97,18 @@ class Vector(Tensor):
         self, dtype_spec: DTypeSpec = float, length: DimSizeSpec = Arbitrary
     ):
         super().__init__(dtype_spec, (length,))
+
+
+class Array(Tensor):
+    """
+    Checks whether the argument is a numeric array with the right data type and
+    number of dimensions
+    """
+
+    def __init__(
+        self,
+        dtype_spec: DTypeSpec = float,
+        ndim: Either(Arbitrary, int) = Arbitrary,
+    ):
+        shape_spec = ndim * (Arbitrary,)
+        super().__init__(dtype_spec, shape_spec)
