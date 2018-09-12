@@ -15,7 +15,7 @@ class Validator(ABC):
     # Subclasses may set this to something more strict than `Any`.
     _type: Type = Any
 
-    def validate(self, value: Any) -> bool:
+    def is_valid(self, value: Any) -> bool:
         """ Whether a value conforms to this validator's type and spec """
         return self.is_of_valid_type(value) and self.is_to_spec(value)
 

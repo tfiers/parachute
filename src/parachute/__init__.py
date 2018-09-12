@@ -1,4 +1,4 @@
 from .validarg import *
-from .spec.base import *
-from .spec.ndarray import *
+from .validators.base import *
+from .validators.ndarray import *
 from .util import *

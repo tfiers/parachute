@@ -5,7 +5,7 @@ from functools import wraps
 from dataclasses import dataclass
 
 from .util import _repr, is_of_type
-from .spec.base import Validator
+from .validators.base import Validator
 
 
 def is_valid(value, annotation) -> bool:
@@ -15,12 +15,12 @@ def is_valid(value, annotation) -> bool:
     if annotation is None:
         return True
     elif isinstance(annotation, Validator):
-        return annotation.validate(value)
+        return annotation.is_valid(value)
     else:
         return is_of_type(value, annotation)
 
 
-def input_validation(function: Callable) -> Callable:
+def input_validated(function: Callable) -> Callable:
     """
     Decorator that validates function call arguments (and default argument
     values) against argument annotations / type hints.

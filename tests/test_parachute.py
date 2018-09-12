@@ -1,10 +1,10 @@
 from typing import Tuple
-from parachute import input_validation, ArgumentError, Either
+from parachute import input_validated, ArgumentError, Either
 
 import pytest
 
 
-@input_validation
+@input_validated
 def my_function(
     a: Either("xx", bool), b: str = "bb", c: Tuple[float, float] = (4.0, 4)
 ):

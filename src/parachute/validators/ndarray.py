@@ -40,17 +40,17 @@ class Shape(Validator):
             return False
         else:
             return all(
-                DimSize(dimsize_spec).validate(dimsize)
+                DimSize(dimsize_spec).is_valid(dimsize)
                 for (dimsize_spec, dimsize) in zip(self.shape_spec, value)
             )
 
 
-Scalar = Number
-Vector = Sequence[Scalar]
-Matrix = Sequence[Vector]
+PythonScalar = Number
+PythonVector = Sequence[PythonScalar]
+PythonMatrix = Sequence[PythonVector]
 # further: rank 3, 4, 5, ... tensors
 
-TensorType = Union[np.ndarray, Scalar, Vector, Matrix]
+TensorType = Union[np.ndarray, PythonScalar, PythonVector, PythonMatrix]
 
 
 class Tensor(Validator):
@@ -69,4 +69,9 @@ class Tensor(Validator):
             return False
 
     def is_to_spec(self, value):
-        return Shape(self.shape_spec).validate(np.shape(value))
+        return Shape(self.shape_spec).is_valid(np.shape(value))
+
+
+class Vector(Tensor):
+    def __init__(self, length: DimSizeSpec = Arbitrary):
+        super().__init__((length,))
