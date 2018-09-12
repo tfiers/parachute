@@ -4,8 +4,8 @@ from typing import Callable, Any
 from functools import wraps
 from dataclasses import dataclass
 
-from .util import _repr, is_of_type
 from .validators.base import Validator
+from .util import _repr, is_of_type
 
 
 def is_valid(value, annotation) -> bool:
@@ -26,19 +26,20 @@ def input_validated(function: Callable) -> Callable:
     values) against argument annotations / type hints.
     """
     spec = inspect.getfullargspec(function)
-    # According to the Python FAQ, the proper name for "argument name" is
-    # "parameter".
+    # (According to the Python FAQ, the proper name for "argument name" is
+    # "parameter").
     arg_names = spec.args
     default_values = spec.defaults
-    # Iterate over arguments in reverse: only the last few parameters have
+    # Iterate over parameters in reverse: only the last few parameters have
     # default values.
     for arg_name, value in zip(reversed(arg_names), reversed(default_values)):
         check_arg(function, arg_name, value)
 
     @wraps(function)
     def checked_function(*args, **kwargs):
-        all_args = args + tuple(kwargs.values())
-        for arg_name, value in zip(arg_names, all_args):
+        for arg_name, value in zip(arg_names, args):
+            check_arg(function, arg_name, value)
+        for arg_name, value in kwargs.items():
             check_arg(function, arg_name, value)
         return function(*args, **kwargs)
 
