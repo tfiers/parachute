@@ -58,17 +58,22 @@ DTypeSpec = Union[bool, int, float, complex]
 
 class Tensor(Validator):
     def __init__(
-        self, shape_spec: ShapeSpec = Arbitrary, dtype_spec: DTypeSpec = float
+        self, shape_spec: ShapeSpec = Arbitrary, dtype: DTypeSpec = float
     ):
         self.shape_spec = shape_spec
-        self.dtype_spec = dtype_spec
-        # Only for IDE's; `is_of_valid_type` is overridden.
+        self.dtype = dtype
+        # Only for IDE's (because `is_of_valid_type` is overridden):
         self._type = TensorType
 
     def is_of_valid_type(self, value):
-        """ Checks whether a value can be coerced into a numeric ndarray """
+        """
+        Checks whether a value can be cast to an ndarray of the correct data
+        type.
+        """
         try:
-            np.array(value, dtype=self.dtype_spec)
+            if not isinstance(value, np.ndarray):
+                value = np.array(value)
+            value.astype(self.dtype, casting="safe")
             return True
         except (TypeError, ValueError):
             return False
@@ -79,6 +84,6 @@ class Tensor(Validator):
 
 class Vector(Tensor):
     def __init__(
-        self, length: DimSizeSpec = Arbitrary, dtype_spec: DTypeSpec = float
+        self, length: DimSizeSpec = Arbitrary, dtype: DTypeSpec = float
     ):
-        super().__init__((length,), dtype_spec)
+        super().__init__((length,), dtype)
