@@ -72,3 +72,22 @@ class Either(Validator):
     def __repr__(self) -> str:
         option_text = ", ".join(_repr(option) for option in self.options)
         return f"Either({option_text})"
+
+
+class Optional(Either):
+    """
+    Either an object of the given type, or `None`.
+
+    An alternative to Python's `typing.Optional`:
+
+    Python's `typing` package:
+        arg_name: Optional[Type] = None
+
+    This class:
+        arg_name: Optional(Type) = None
+
+    Purpose: to have a syntax in line with other validators in this package.
+    """
+
+    def __init__(self, type_):
+        super().__init__(type_, None)
