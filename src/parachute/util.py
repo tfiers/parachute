@@ -23,7 +23,7 @@ def is_type(value: Any) -> bool:
     )
 
 
-Type = TypeVar("GenericType")
+Type = TypeVar("Type")
 
 
 def is_of_type(value: Any, type_: Type) -> bool:

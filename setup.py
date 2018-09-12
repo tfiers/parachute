@@ -11,9 +11,10 @@ setup(
     author="Tomas Fiers",
     author_email="tomas.fiers@gmail.com",
     license="GPL-3.0",
+    python_requires=">= 3.7",
     install_requires=("typeguard"),
     tests_require=("pytest"),
-    python_requires=">= 3.7",
+    extras_require={"ndarray": ["numpy"]},
     # The package is in a seemingly redundant `src` dir.
     # Reason: https://blog.ionelmc.ro/2014/05/25/python-packaging/
     package_dir={"": "src"},

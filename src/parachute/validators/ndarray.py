@@ -1,6 +1,6 @@
 import numpy as np
 
-from typing import Tuple, Union, Sequence
+from typing import Tuple, Union, Sequence, Type
 from numbers import Number
 
 from .base import Validator, Either
@@ -53,7 +53,7 @@ PythonMatrix = Sequence[PythonVector]
 TensorType = Union[np.ndarray, PythonScalar, PythonVector, PythonMatrix]
 
 
-DTypeSpec = Union[bool, int, float, complex]
+DTypeSpec = Union[Type[bool], Type[int], Type[float], Type[complex]]
 
 
 class Tensor(Validator):
