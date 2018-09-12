@@ -53,17 +53,22 @@ PythonMatrix = Sequence[PythonVector]
 TensorType = Union[np.ndarray, PythonScalar, PythonVector, PythonMatrix]
 
 
+DTypeSpec = Union[bool, int, float, complex]
+
+
 class Tensor(Validator):
-    def __init__(self, shape_spec: ShapeSpec = Arbitrary, dtype_=Number):
+    def __init__(
+        self, shape_spec: ShapeSpec = Arbitrary, dtype_spec: DTypeSpec = float
+    ):
         self.shape_spec = shape_spec
-        self.dtype_ = dtype_
+        self.dtype_spec = dtype_spec
         # Only for IDE's; `is_of_valid_type` is overridden.
         self._type = TensorType
 
     def is_of_valid_type(self, value):
         """ Checks whether a value can be coerced into a numeric ndarray """
         try:
-            np.array(value, dtype=complex)
+            np.array(value, dtype=self.dtype_spec)
             return True
         except (TypeError, ValueError):
             return False
@@ -73,5 +78,7 @@ class Tensor(Validator):
 
 
 class Vector(Tensor):
-    def __init__(self, length: DimSizeSpec = Arbitrary):
-        super().__init__((length,))
+    def __init__(
+        self, length: DimSizeSpec = Arbitrary, dtype_spec: DTypeSpec = float
+    ):
+        super().__init__((length,), dtype_spec)
