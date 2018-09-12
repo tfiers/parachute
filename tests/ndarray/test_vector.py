@@ -4,7 +4,7 @@ from parachute import Vector
 
 
 def test_vector_complex():
-    v = Vector(dtype=complex)
+    v = Vector(complex)
     assert not v.is_valid("not a numeric vector")
     assert v.is_valid([1, 2])
     assert v.is_valid((1, 2))
@@ -34,7 +34,7 @@ def test_vector_float():
 
 
 def test_vector_int():
-    v = Vector(dtype=int)
+    v = Vector(int)
     assert not v.is_valid("not a numeric vector")
     assert v.is_valid([1, 2])
     assert v.is_valid((1, 2))
@@ -49,7 +49,7 @@ def test_vector_int():
 
 
 def test_vector_bool():
-    v = Vector(dtype=bool)
+    v = Vector(bool)
     assert not v.is_valid("not a numeric vector")
     assert not v.is_valid([1, 2])
     assert not v.is_valid((1, 2))
@@ -64,7 +64,7 @@ def test_vector_bool():
 
 
 def test_vector_shape():
-    v = Vector(length=2)
+    v = Vector(float, length=2)
     assert not v.is_valid("not a numeric vector")
     assert v.is_valid([1, 2])
     assert v.is_valid((1, 2))

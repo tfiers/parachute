@@ -58,12 +58,12 @@ DTypeSpec = Union[bool, int, float, complex]
 
 class Tensor(Validator):
     def __init__(
-        self, shape_spec: ShapeSpec = Arbitrary, dtype: DTypeSpec = float
+        self, dtype: DTypeSpec = float, shape_spec: ShapeSpec = Arbitrary
     ):
-        self.shape_spec = shape_spec
-        self.dtype = dtype
         # Only for IDE's (because `is_of_valid_type` is overridden):
         self._type = TensorType
+        self.dtype = dtype
+        self.shape_spec = shape_spec
 
     def is_of_valid_type(self, value):
         """
@@ -84,6 +84,6 @@ class Tensor(Validator):
 
 class Vector(Tensor):
     def __init__(
-        self, length: DimSizeSpec = Arbitrary, dtype: DTypeSpec = float
+        self, dtype: DTypeSpec = float, length: DimSizeSpec = Arbitrary
     ):
-        super().__init__((length,), dtype)
+        super().__init__(dtype, (length,))
