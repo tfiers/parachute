@@ -56,19 +56,11 @@ TensorType = Union[np.ndarray, PythonScalar, PythonVector, PythonMatrix]
 DTypeSpec = Union[bool, int, float, complex]
 
 
-# Syntax to correctly subclass np.ndarray thanks to
-# https://sourceforge.net/p/numpy/mailman/message/12594316/
-class Tensor(Validator, np.ndarray):
+class Tensor(Validator):
     """
     Checks whether the argument is a scalar, a numeric vector, a numeric matrix,
     or in general, a numeric tensor, of the right shape and data type.
-
-    Subclasses np.ndarray to enable code completion in IDE's.
     """
-
-    def __new__(cls, *args, **kwargs) -> np.ndarray:
-        obj = np.ndarray.__new__(cls, shape=None)
-        return obj
 
     def __init__(
         self, dtype_spec: DTypeSpec = float, shape_spec: ShapeSpec = Arbitrary
