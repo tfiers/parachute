@@ -1,10 +1,9 @@
+from numbers import Number
+from typing import Tuple, Union, Sequence, Type
+
 import numpy as np
 
-from typing import Tuple, Union, Sequence, Type
-from numbers import Number
-
 from .base import Validator, Either
-
 
 Arbitrary = None
 

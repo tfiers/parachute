@@ -1,8 +1,8 @@
 import inspect
 import typing
-import typeguard
-
 from typing import Callable, Any, TypeVar
+
+import typeguard
 
 
 def is_literal(value: Any) -> bool:

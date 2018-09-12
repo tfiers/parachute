@@ -1,6 +1,5 @@
-import pytest
-
 from typing import Union
+
 from parachute import Either
 
 

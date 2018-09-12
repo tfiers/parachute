@@ -1,11 +1,10 @@
 import inspect
-
-from typing import Callable, Any
-from functools import wraps
 from dataclasses import dataclass
+from functools import wraps
+from typing import Callable, Any
 
-from .validators.base import Validator
 from .util import _repr, is_of_type
+from .validators.base import Validator
 
 
 def is_valid(value, annotation) -> bool:
