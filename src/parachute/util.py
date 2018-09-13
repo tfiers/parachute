@@ -1,6 +1,6 @@
 import inspect
 import typing
-from typing import Callable, Any, TypeVar
+from typing import Callable, Any, Type
 
 import typeguard
 
@@ -10,35 +10,45 @@ def is_literal(value: Any) -> bool:
 
 
 def is_type(value: Any) -> bool:
+    return is_python_type(value) or is_typing_type(value)
+
+
+def is_python_type(value: Any) -> bool:
+    """ Whether a value is a python `type`, such as `bool` or `str`."""
+    return type(value) == type
+
+
+def is_typing_type(value: Any) -> bool:
     """
-    Whether a value is a python `type` (such as `bool` or `str`), or one of the
-    types from the `typing` module (such as `Sequence[int]`, `Union[bool, str]`,
-    or `Any`).
+    Whether a value is one of the types from the `typing` module (such as
+    `Sequence[int]`, `Union[bool, str]`, or `Any`).
     """
     return type(value) in (
-        type,
         typing._GenericAlias,
         typing._VariadicGenericAlias,
         typing._SpecialForm,
+        typing.TypeVar,
     )
-
-
-Type = TypeVar("Type")
 
 
 def is_of_type(value: Any, type_: Type) -> bool:
     """
     Returns whether a value is of a given type.
     """
-    # The type needs to be a type (yo dawg)
-    if not is_type(type_):
-        raise TypeError
-    # For actual type checking, defer to the "typeguard" package:
-    try:
-        typeguard.check_type("", value, expected_type=type_)
-        return True
-    except TypeError:
-        return False
+    if is_python_type(value):
+        return isinstance(value, type_)
+    elif is_typing_type(value):
+        # Defer to the "typeguard" package:
+        try:
+            typeguard.check_type("", value, expected_type=type_)
+            return True
+        except TypeError:
+            return False
+    else:
+        msg = (
+            f"The value for the `type_` parameter ({type_}) " "must be a type."
+        )
+        raise TypeError(msg)
 
 
 def make_docstring(function: Callable):
