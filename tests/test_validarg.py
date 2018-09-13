@@ -4,6 +4,8 @@ import pytest
 
 from parachute import input_validated, ArgumentError, Either, Vector
 
+pytestmark = pytest.mark.skip
+
 
 @input_validated
 def my_function(

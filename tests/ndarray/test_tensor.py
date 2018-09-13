@@ -1,6 +1,9 @@
 import numpy as np
+import pytest
 
 from parachute import Tensor
+
+pytestmark = pytest.mark.skip
 
 
 def test_tensortype_arbitrary():

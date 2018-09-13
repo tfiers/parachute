@@ -1,6 +1,9 @@
 import numpy as np
+import pytest
 
 from parachute import Vector
+
+pytestmark = pytest.mark.skip
 
 
 def test_vector_complex():
