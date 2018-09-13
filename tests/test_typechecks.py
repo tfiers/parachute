@@ -11,8 +11,7 @@ def test_literal():
 
 # fmt: off
 class A: pass
-class B: pass
-class C(A, B): pass
+class B(A): pass
 # fmt: on
 
 python_types = (
@@ -27,7 +26,6 @@ python_types = (
     datetime,
     A,
     B,
-    C,
 )
 python_literals = (
     "jo",
@@ -39,7 +37,6 @@ python_literals = (
     datetime(2018, 9, 13),
     A(),
     B(),
-    C(),
 )
 typing_types = (
     Type,

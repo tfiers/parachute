@@ -35,9 +35,9 @@ def is_of_type(value: Any, type_: Type) -> bool:
     """
     Returns whether a value is of a given type.
     """
-    if is_python_type(value):
+    if is_python_type(type_):
         return isinstance(value, type_)
-    elif is_typing_type(value):
+    elif is_typing_type(type_):
         # Defer to the "typeguard" package:
         try:
             typeguard.check_type("", value, expected_type=type_)
