@@ -5,9 +5,16 @@ class Validator(ABC):
     pass
 
 
-def either(*_options):
-    class Option(Validator):
+# Based on this excellent writeup on metaclasses:
+# https://stackoverflow.com/a/6581949/2611913
+def set_validator_params(clsname, bases, attrs):
+    attrs["jo"] = "test"
+    # Create class using special `type()` call:
+    return type(clsname, bases, attrs)
 
+
+def either(*_options):
+    class Option(Validator, metaclass=set_validator_params):
         options = _options
 
         def is_valid(self) -> bool:

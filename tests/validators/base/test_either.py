@@ -11,6 +11,7 @@ def test_either():
     O2 = either("a", "b", "c")
     assert O1.options == (4, 5)
     assert O2.options == ("a", "b", "c")
+    print(O2.jo)
 
 
 @pytest.mark.skip
