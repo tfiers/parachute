@@ -48,6 +48,8 @@ def test_closure():
 #
 #
 # Idea 2: Type returned by a classmethod
+#
+# Problem with this: all instances refer to the same object.
 
 
 class HugeNumber(float):
@@ -87,3 +89,9 @@ def test___new__():
     R = RidiculousNumber(9999)
     print(R(20))  # --> no instance, but class.
     assert not RidiculousNumber(min=9999)(8).is_valid()
+
+
+#
+#
+# Idea 4: metaclasses
+# ...
