@@ -4,7 +4,7 @@ from functools import wraps
 from typing import Callable, Any
 
 from .util import _repr, is_of_type
-from .validators.base import Validator
+from .validators.base import Validatable
 
 
 def is_valid(value, annotation) -> bool:
@@ -13,7 +13,7 @@ def is_valid(value, annotation) -> bool:
     """
     if annotation is None:
         return True
-    elif isinstance(annotation, Validator):
+    elif isinstance(annotation, Validatable):
         return annotation.is_valid(value)
     else:
         return is_of_type(value, annotation)
@@ -22,7 +22,7 @@ def is_valid(value, annotation) -> bool:
 def input_validated(function: Callable) -> Callable:
     """
     Decorator that validates function call arguments (and default argument
-    values) against argument annotations / type hints.
+    values) according to argument annotations / type hints.
     """
     spec = inspect.getfullargspec(function)
     # (According to the Python FAQ, the proper name for "argument name" is

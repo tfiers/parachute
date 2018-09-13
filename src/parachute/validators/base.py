@@ -1,28 +1,40 @@
-from abc import ABC
+from abc import ABC, abstractmethod
+from typing import Any
+
+import parachute.util as util
 
 
-class Validator(ABC):
-    pass
+class Validatable(ABC):
+
+    _argument_was_castable = True
+
+    def is_valid(self) -> bool:
+        """ Whether a value conforms to this validator's type and spec. """
+        return self._argument_was_castable and self.is_to_spec()
+
+    @abstractmethod
+    def is_to_spec(self) -> bool:
+        ...
 
 
-# Based on this excellent writeup on metaclasses:
-# https://stackoverflow.com/a/6581949/2611913
-def set_validator_params(clsname, bases, attrs):
-    attrs["jo"] = "test"
-    # Create class using special `type()` call:
-    return type(clsname, bases, attrs)
+def either(*options):
+    class Choice(Validatable):
+        options_ = options
 
+        def __init__(self, value):
+            self.value = value
 
-def either(*_options):
-    class Option(Validator, metaclass=set_validator_params):
-        options = _options
+        def is_to_spec(self) -> bool:
+            return any(
+                self._value_matches_option(self.value, option)
+                for option in self.options_
+            )
 
-        def is_valid(self) -> bool:
-            return self in self.options
+        @staticmethod
+        def _value_matches_option(value: Any, option: Any) -> bool:
+            if util.is_literal(option):
+                return value == option
+            else:
+                return util.is_of_type(value, option)
 
-        def _homogenous_type(self) -> bool:
-            """ Whether all options are of the same type. """
-            first_type = type(self.options[0])
-            return all(type(option) == first_type for option in self.options)
-
-    return Option
+    return Choice
