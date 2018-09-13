@@ -3,6 +3,9 @@ from typing import Callable
 import pytest
 
 
+# Idea 1: Type defined in a function, as a closure
+
+
 def large_number(minimumsize=0):
     class LargeNumber(float):
         _minimumsize = minimumsize
@@ -27,7 +30,6 @@ def input_validated(function: Callable) -> Callable:
 
 @input_validated
 def g(param: large_number(minimumsize=20)):
-    param._minimumsize
     return param
 
 
@@ -37,6 +39,15 @@ def test_closure():
         g(7)
     with pytest.raises(ValueError):
         g(-3)
+
+    # g returns its argument, so we can inspect it
+    assert hasattr(g(44), "is_integer")  # float method
+    assert hasattr(g(44), "_minimumsize")
+
+
+#
+#
+# Idea 2: Type returned by a classmethod
 
 
 class HugeNumber(float):
@@ -51,6 +62,11 @@ class HugeNumber(float):
 
 def test_classmethod():
     assert not HugeNumber.get(min=21)(20).is_valid()
+
+
+#
+#
+# Idea 3 (doesn't work): override __new__
 
 
 class RidiculousNumber(float):
@@ -71,7 +87,3 @@ def test___new__():
     R = RidiculousNumber(9999)
     print(R(20))  # --> no instance, but class.
     assert not RidiculousNumber(min=9999)(8).is_valid()
-
-
-# --> The __new__ technique doesn't work.
-# The closure and classmethod techniques work though.

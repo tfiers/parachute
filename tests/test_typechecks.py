@@ -10,8 +10,11 @@ def test_literal():
 
 
 # fmt: off
-class A: pass
-class B(A): pass
+class A:
+    pass
+
+class B(A):
+    pass
 # fmt: on
 
 python_types = (
