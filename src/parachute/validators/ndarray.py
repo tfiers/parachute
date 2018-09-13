@@ -78,8 +78,8 @@ class Tensor(Validator, np.ndarray):
 
     def is_of_valid_type(self, value):
         """
-        Checks whether a value can be cast to an ndarray of the correct data
-        type.
+        Checks whether a value can be safely cast to an ndarray of the
+        correct data type.
         """
         try:
             if not isinstance(value, np.ndarray):
@@ -108,7 +108,7 @@ class Vector(Tensor):
 class Array(Tensor):
     """
     Checks whether the argument is a numeric array with the right data type and
-    number of dimensions
+    number of dimensions.
     """
 
     def __init__(
