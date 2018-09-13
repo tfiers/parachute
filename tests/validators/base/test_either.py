@@ -2,7 +2,7 @@ from typing import Union
 
 import pytest
 
-from parachute import Either
+# from parachute import Either
 
 pytestmark = pytest.mark.skip
 

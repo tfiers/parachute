@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from parachute import Vector
+# from parachute import Vector
 
 pytestmark = pytest.mark.skip
 

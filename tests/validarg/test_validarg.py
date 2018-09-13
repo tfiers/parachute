@@ -1,20 +1,18 @@
-from typing import Tuple
-
 import pytest
 
-from parachute import input_validated, ArgumentError, Either, Vector
+# from parachute import input_validated, ArgumentError, Either
 
 pytestmark = pytest.mark.skip
 
 
-@input_validated
-def my_function(
-    a: Either("xx", bool),
-    b: str = "bb",
-    c: Vector(length=2) = (4.0, 4),
-    d: Tuple[str, bool] = ("yes", True),
-):
-    return a
+# @input_validated
+# def my_function(
+#     a: Either("xx", bool),
+#     b: str = "bb",
+#     c: Vector(length=2) = (4.0, 4),
+#     d: Tuple[str, bool] = ("yes", True),
+# ):
+#     return a
 
 
 def test_argcheck():

@@ -1,6 +1,6 @@
 import pytest
 
-from parachute import DimSize
+# from parachute import DimSize
 
 pytestmark = pytest.mark.skip
 

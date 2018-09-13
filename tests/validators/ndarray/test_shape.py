@@ -1,6 +1,6 @@
 import pytest
 
-from parachute import Shape
+# from parachute import Shape
 
 pytestmark = pytest.mark.skip
 

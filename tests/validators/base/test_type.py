@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from parachute import TypeValidator
+# from parachute import TypeValidator
 
 pytestmark = pytest.mark.skip
 
