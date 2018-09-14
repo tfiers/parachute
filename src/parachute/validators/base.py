@@ -21,7 +21,7 @@ CanonicalParamType = TypeVar("CanonicalParamType")
 # is the canonical parameter type.
 
 
-class Factory(type, ABC):
+class ValidatedArgumentFactory(type, ABC):
     def __new__(mcs, clsname, parents, namespace):
         cls = type.__new__(mcs, clsname, parents, dict(namespace))
 
@@ -70,7 +70,9 @@ class Factory(type, ABC):
         return cls
 
 
-class Validatable(Generic[CanonicalParamType], metaclass=Factory):
+class ValidatedArgument(
+    Generic[CanonicalParamType], metaclass=ValidatedArgumentFactory
+):
     def is_valid(self) -> bool:
         """
         Whether the instantiation argument could be succesfully cast to the
@@ -137,7 +139,7 @@ def either(*options):
     Checks whether the function argument matches one of the given options.
     """
 
-    class Choice(Validatable[object]):
+    class Choice(ValidatedArgument[object]):
 
         options_: Tuple[Any, ...] = options
 

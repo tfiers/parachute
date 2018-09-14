@@ -31,23 +31,21 @@ def is_typing_type(value: Any) -> bool:
     )
 
 
-def is_of_type(value: Any, type_: Type) -> bool:
+def is_of_type(value: Any, ttype: Type) -> bool:
     """
     Returns whether a value is of a given type.
     """
-    if is_python_type(type_):
-        return isinstance(value, type_)
-    elif is_typing_type(type_):
+    if is_python_type(ttype):
+        return isinstance(value, ttype)
+    elif is_typing_type(ttype):
         # Defer to the "typeguard" package:
         try:
-            typeguard.check_type("", value, expected_type=type_)
+            typeguard.check_type("", value, expected_type=ttype)
             return True
         except TypeError:
             return False
     else:
-        msg = (
-            f"The value for the `type_` parameter ({type_}) " "must be a type."
-        )
+        msg = f"The value for the `ttype` parameter ({ttype}) must be a type."
         raise TypeError(msg)
 
 

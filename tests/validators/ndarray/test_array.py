@@ -32,6 +32,9 @@ def test_type_arbitrary_higher_order():
     # fmt: on
 
 
+# See test_vector.py for tests of other dtypes.
+
+
 def test_shape():
     Array = array(shape_spec=(2,))
     assert Array([1, 2]).is_valid()

@@ -4,19 +4,19 @@ from functools import wraps
 from typing import Callable, Any
 
 from .util import _repr, is_of_type
-from .validators.base import Validatable
+from .validators.base import ValidatedArgument
 
 
-def is_valid(value, annotation) -> bool:
+def is_valid(value, Annotation) -> bool:
     """
     Checks whether a value matches a type hint / annotation.
     """
-    if annotation is None:
+    if Annotation is None:
         return True
-    elif isinstance(annotation, Validatable):
-        return annotation.is_valid(value)
+    elif isinstance(Annotation, ValidatedArgument):
+        return Annotation(value).is_valid()
     else:
-        return is_of_type(value, annotation)
+        return is_of_type(value, Annotation)
 
 
 def input_validated(function: Callable) -> Callable:
@@ -50,8 +50,8 @@ def check_arg(function: Callable, arg_name: str, value: Any) -> None:
     Displays a helpful error message when a function argument does not match its
     corresponding type hint / annotation.
     """
-    annotation = function.__annotations__.get(arg_name)
-    if not is_valid(value, annotation):
+    Annotation = function.__annotations__.get(arg_name)
+    if not is_valid(value, Annotation):
         raise ArgumentError(function, arg_name, value)
 
 

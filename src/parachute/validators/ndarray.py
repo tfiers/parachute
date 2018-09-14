@@ -3,7 +3,7 @@ from typing import Union, Tuple, Type, Optional, Any
 import numpy as np
 
 import parachute.util as util
-from .base import Validatable, CastingError, either
+from .base import ValidatedArgument, CastingError, either
 
 # Special type to denote arbitrary shapes, dimension sizes, etc.
 Arbitrary = None
@@ -15,7 +15,12 @@ ShapeSpec = Union[Tuple[DimSizeSpec, ...], Arbitrary]
 
 
 def dimsize(spec: DimSizeSpec = Arbitrary):
-    class DimSize(Validatable[int], int):
+    """
+    Check whether the argument can be cast to an integer, and whether it
+    satisfies the given specification.
+    """
+
+    class DimSize(ValidatedArgument[int], int):
         dimsize_spec = spec
 
         @classmethod
@@ -52,7 +57,7 @@ def shape(spec: ShapeSpec = Arbitrary):
     specification.
     """
 
-    class Shape(Validatable[tuple], tuple):
+    class Shape(ValidatedArgument[tuple], tuple):
         shape_spec = spec
 
         @classmethod
@@ -90,10 +95,6 @@ def shape(spec: ShapeSpec = Arbitrary):
 
 
 def array(
-    #
-    # Checks whether the argument is a scalar, a numeric vector, a numeric
-    # matrix, or in general, a numeric tensor, of the right shape and data type.
-    #
     dtype: DType = float,
     #     Datatype of the numbers in the array.
     ndim: either(int, Arbitrary) = Arbitrary,
@@ -102,12 +103,16 @@ def array(
     shape_spec: Optional[ShapeSpec] = None,
     #     Shape of the array (e.g. `(10,10,2)` or `(2, Arbitrary)`).
 ):
+    """
+    Checks whether the argument is a scalar, a numeric vector, a numeric
+    matrix, or in general, a numeric tensor, of the right shape and data type.
+    """
     if (shape_spec is None) and (ndim is not Arbitrary):
         shape_spec = ndim * (Arbitrary,)
     elif shape_spec is None:
         shape_spec = Arbitrary
 
-    class Array(Validatable[np.ndarray], np.ndarray):
+    class Array(ValidatedArgument[np.ndarray], np.ndarray):
         dtype_ = dtype
         shape_spec_ = shape_spec
 
