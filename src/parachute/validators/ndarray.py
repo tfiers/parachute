@@ -18,8 +18,8 @@ def dimsize(spec: DimSizeSpec = Arbitrary):
     class DimSize(Validatable[int], int):
         dimsize_spec = spec
 
-        @staticmethod
-        def cast(argument: Any):
+        @classmethod
+        def cast(cls, argument: Any):
             """
             Convert the argument to an instance of the canonical
             parameter type. Raise a CastingError when this cannot be
@@ -47,15 +47,18 @@ def dimsize(spec: DimSizeSpec = Arbitrary):
 
 
 def shape(spec: ShapeSpec = Arbitrary):
+    """
+    Check whether the argument is an array shape, that satisfies the given
+    specification.
+    """
+
     class Shape(Validatable[tuple], tuple):
         shape_spec = spec
 
-        # Todo: test...
-
-        @staticmethod
-        def cast(argument: Any):
+        @classmethod
+        def cast(cls, argument: Any) -> ShapeType:
             """
-            Accepts any iterable, and attempts to cast it to a tuple of
+            Accept any iterable, and attempt to cast it to a tuple of
             Python integers.
             """
             try:
@@ -94,37 +97,43 @@ def array(
     dtype: DType = float,
     #     Datatype of the numbers in the array.
     ndim: either(int, Arbitrary) = Arbitrary,
-    #     Number of dimensions of the array.
-    shape: Optional[ShapeSpec] = None,
-    #     Shape of the array (e.g. `(10,10,2)` or `(2, Arbitrary)`). If given,
-    #     `ndim` is ignored.
+    #     Number of dimensions of the array. Ignored when a value is specified
+    #     for `shape_spec`.
+    shape_spec: Optional[ShapeSpec] = None,
+    #     Shape of the array (e.g. `(10,10,2)` or `(2, Arbitrary)`).
 ):
-    if shape is None:
-        shape = ndim * (Arbitrary,)
+    if (shape_spec is None) and (ndim is not Arbitrary):
+        shape_spec = ndim * (Arbitrary,)
+    elif shape_spec is None:
+        shape_spec = Arbitrary
 
-    # Subclass np.ndarray to enable code completion in IDE's.
-    # Syntax to correctly do this thanks to:
-    # https://sourceforge.net/p/numpy/mailman/message/12594316/
-    class Array(Validatable, np.ndarray):
-        dtype_spec = dtype
-        shape_spec = shape
+    class Array(Validatable[np.ndarray], np.ndarray):
+        dtype_ = dtype
+        shape_spec_ = shape_spec
 
-        # Continue: implement cast
-
-        def __new__(cls, argument):
+        @classmethod
+        def cast(cls, argument: Any) -> np.ndarray:
             try:
                 if not isinstance(argument, np.ndarray):
                     argument = np.array(argument)
-                cast = argument.astype(self.dtype_spec, casting="safe")
-                instance = np.ndarray.__new__(
-                    cls, shape=cast.shape, buffer=cast
-                )
-            except (TypeError, ValueError):
-                instance = np.ndarray.__new__(cls)
-                instance._argument_was_castable = False
-            return instance
+                cast = argument.astype(cls.dtype_, casting="safe")
+                return cast
+            except (TypeError, ValueError) as err:
+                raise CastingError(err)
+
+        @staticmethod
+        def get_dummy_value(canonical_param_type):
+            return np.array([])
+
+        @classmethod
+        def get_populated_instance(
+            cls, canonical_param_type, value: np.ndarray
+        ):
+            return np.ndarray.__new__(
+                cls, shape=value.shape, dtype=value.dtype, buffer=value
+            )
 
         def is_to_spec(self):
-            return True
+            return shape(self.shape_spec_)(self.shape).is_valid()
 
     return Array

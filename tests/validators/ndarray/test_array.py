@@ -1,8 +1,6 @@
-import pytest
+import numpy as np
 
 from parachute import array
-
-pytestmark = pytest.mark.skip
 
 
 def test_type_arbitrary():
@@ -35,10 +33,11 @@ def test_type_higher_order():
 
 
 def test_shape():
-    Array = array(shape=(2,))
+    Array = array(shape_spec=(2,))
     assert Array([1, 2]).is_valid()
     assert Array((0.41, -4)).is_valid()
     assert Array(np.array([1, 2])).is_valid()
+    assert not Array([1]).is_valid()
     assert not Array([1, 2, 3]).is_valid()
     assert not Array([[1, 2]]).is_valid()
 

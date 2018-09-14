@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar, Generic, Any, Optional, Tuple
+from typing import TypeVar, Generic, Any, Optional, Tuple, Type
 
 import parachute.util as util
 
@@ -55,14 +55,12 @@ class Factory(type, ABC):
                 except CastingError:
                     # Get a default instantiation of the canonical parameter
                     # type (e.g. `0` for int, `()` for tuple, etc).
-                    value = canonical_param_type.__new__(canonical_param_type)
+                    value = subclass.get_dummy_value(canonical_param_type)
                     cast_was_succesful = False
-                try:
-                    output = canonical_param_type.__new__(subclass, value)
-                except TypeError:
-                    # The canonical parameter type did not accept arguments.
-                    # (this is e.g. the case for `object`).
-                    output = canonical_param_type.__new__(subclass)
+
+                output = subclass.get_populated_instance(
+                    canonical_param_type, value
+                )
                 output.cast_was_succesful = cast_was_succesful
                 output.raw_argument = argument
                 return output
@@ -73,8 +71,16 @@ class Factory(type, ABC):
 
 
 class Validatable(Generic[CanonicalParamType], metaclass=Factory):
+    def is_valid(self) -> bool:
+        """
+        Whether the instantiation argument could be succesfully cast to the
+        output type AND whether the argument was to spec.
+        """
+        return self.cast_was_succesful and self.is_to_spec()
+
+    @classmethod
     @abstractmethod
-    def cast(argument: Any):
+    def cast(cls, argument: Any):
         """
         Convert the argument to an instance of the canonical
         parameter type. Raise a CastingError when this cannot be
@@ -94,12 +100,36 @@ class Validatable(Generic[CanonicalParamType], metaclass=Factory):
         """
         raise NotImplementedError
 
-    def is_valid(self) -> bool:
+    @staticmethod
+    def get_dummy_value(
+        canonical_param_type: Type[CanonicalParamType]
+    ) -> CanonicalParamType:
         """
-        Whether the argument could be succesfully cast to the output
-        type AND whether the argument was to spec.
+        Get a default instantiation of the canonical parameter type (e.g. `0`
+        for int, `()` for tuple, etc).
         """
-        return self.cast_was_succesful and self.is_to_spec()
+        return canonical_param_type.__new__(canonical_param_type)
+
+    @classmethod
+    def get_populated_instance(
+        cls,
+        canonical_param_type: Type[CanonicalParamType],
+        value: CanonicalParamType,
+    ):
+        """
+        Get an instantiation of a subclass of the canonical parameter type,
+        populated with a given value.
+
+        For overriding methods: this subclass instance should be created as
+
+            return canonical_param_type.__new__(cls, [custom args and kwargs]),
+
+        where the custom (keyword) arguments ensure that the instance is
+        populated with the given value.
+        Also make sure that the overriding method is also annotated as a
+        class method!
+        """
+        return canonical_param_type.__new__(cls, value)
 
 
 def either(*options):
@@ -111,13 +141,19 @@ def either(*options):
 
         options_: Tuple[Any, ...] = options
 
-        @staticmethod
-        def cast(argument: Any):
+        @classmethod
+        def cast(cls, argument: Any):
             """
             Do not attempt any casting (as we do not know what the output
             type should be -- the options could be of different types).
             """
             return argument
+
+        @classmethod
+        def get_populated_instance(
+            cls, canonical_param_type: Type[object], value: object = None
+        ):
+            return object.__new__(cls)
 
         def is_to_spec(self) -> bool:
             return any(
