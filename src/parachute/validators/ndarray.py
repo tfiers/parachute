@@ -2,6 +2,7 @@ from typing import Union, Tuple, Type, Optional, Any
 
 import numpy as np
 
+import parachute.util as util
 from .base import Validatable, either
 
 Arbitrary = None
@@ -10,10 +11,9 @@ DimSizeSpec = Union[int, Arbitrary]
 ShapeSpec = Union[Tuple[DimSizeSpec, ...], Arbitrary]
 
 
-def dimsize(dimsize: DimSizeSpec = Arbitrary):
+def dimsize(spec: DimSizeSpec = Arbitrary):
     class DimSize(int, Validatable):
-        # Try Validatable[BaseType]  :D
-        spec = dimsize
+        dimsize_spec = spec
 
         def __new__(cls, argument: Any):
             try:
@@ -24,12 +24,40 @@ def dimsize(dimsize: DimSizeSpec = Arbitrary):
             return instance
 
         def is_to_spec(self):
-            if self.spec is Arbitrary:
+            if self.dimsize_spec is Arbitrary:
                 return True
             else:
-                return self == self.spec
+                return self == self.dimsize_spec
 
     return DimSize
+
+
+def shape(spec: ShapeSpec = Arbitrary):
+    class Shape(tuple, Validatable):
+        shape_spec = spec
+
+        def __new__(cls, argument: Any):
+            if isinstance(argument, list):
+                argument = tuple(argument)
+            if util.is_of_type(argument, Tuple[int, ...]):
+                instance = tuple.__new__(cls, argument)
+            else:
+                instance = tuple.__new__(cls)
+                instance._argument_was_castable = False
+            return instance
+
+        def is_to_spec(self):
+            if self.shape_spec is Arbitrary:
+                return True
+            elif len(self) != len(self.shape_spec):
+                return False
+            else:
+                return all(
+                    dimsize(dimsize_spec)(dimsize_).is_valid()
+                    for (dimsize_spec, dimsize_) in zip(self.shape_spec, self)
+                )
+
+    return Shape
 
 
 def array(

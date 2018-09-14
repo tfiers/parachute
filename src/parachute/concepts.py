@@ -6,6 +6,8 @@ import pytest
 # Idea 1: Type defined in a function, as a closure
 
 
+# More descriptive name for the factory functions (make them a class too):
+# ValidatableLargeNumberFactory
 def large_number(minimumsize=0):
     class LargeNumber(float):
         _minimumsize = minimumsize
