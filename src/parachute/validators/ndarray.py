@@ -15,18 +15,19 @@ ShapeSpec = Union[Tuple[DimSizeSpec, ...], Arbitrary]
 
 
 def dimsize(spec: DimSizeSpec = Arbitrary):
-    class DimSize(int, Validatable):
+    class DimSize(Validatable[int], int):
         dimsize_spec = spec
 
-        def __new__(cls, argument: Any):
+        def cast(cls, argument: Any):
             try:
-                instance = int.__new__(cls, argument)
-            except (TypeError, ValueError):
-                instance = int.__new__(cls)
-                instance._argument_was_castable = False
-            return instance
+                return int.__new__(cls, argument)
+            except (TypeError, ValueError) as err:
+                raise CastingError(err)
 
-        def is_to_spec(self):
+        def get_default_instance(cls):
+            return int.__new__(cls)
+
+        def is_to_spec(self: int):
             if self.dimsize_spec is Arbitrary:
                 return True
             else:
@@ -36,40 +37,32 @@ def dimsize(spec: DimSizeSpec = Arbitrary):
 
 
 def shape(spec: ShapeSpec = Arbitrary):
-    class Shape(tuple, Validatable):
+    class Shape(Validatable[tuple], tuple):
         shape_spec = spec
 
-        @classmethod
-        def cast(cls, argument: Any) -> ShapeType:
+        def cast(cls, argument: Any):
             """
-            Accepts any iterable, and attempts to cast to a tuple of
-            Python int's.
+            Accepts any iterable, and attempts to cast it to a tuple of
+            Python integers.
             """
             try:
                 if isinstance(argument, np.ndarray):
-                    # Convert numpy 'int32'-like types to plain 'int'.
+                    # Normalise numpy 'int32'-like to plain 'int'.
                     argument = argument.tolist()
-
+                # Check if the input is iterable
                 tup = tuple(el for el in iter(argument))
-
+                # Check if the elements are integers.
                 if not util.is_of_type(tup, ShapeType):
                     raise TypeError
-
-            except Exception as err:
+            except (TypeError, ValueError) as err:
                 raise CastingError(err)
-
             else:
                 return tuple.__new__(cls, tup)
 
-        def __new__(cls, argument: Any):
-            try:
-                instance = Shape.cast(argument)
-            except CastingError:
-                instance = tuple.__new__(cls)
-                instance._argument_was_castable = False
-            return instance
+        def get_default_instance(cls):
+            return tuple.__new__(cls)
 
-        def is_to_spec(self):
+        def is_to_spec(self: ShapeType):
             if self.shape_spec is Arbitrary:
                 return True
             elif len(self) != len(self.shape_spec):
@@ -102,9 +95,11 @@ def array(
     # Subclass np.ndarray to enable code completion in IDE's.
     # Syntax to correctly do this thanks to:
     # https://sourceforge.net/p/numpy/mailman/message/12594316/
-    class Array(np.ndarray, Validatable):
+    class Array(Validatable, np.ndarray):
         dtype_spec = dtype
         shape_spec = shape
+
+        # Continue: implement cast
 
         def __new__(cls, argument):
             try:
