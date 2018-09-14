@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, TypeVar, Generic
 
 import pytest
 
@@ -96,4 +96,35 @@ def test___new__():
 #
 #
 # Idea 4: metaclasses
-# ...
+
+# Continue: Apply this technique to Validator, DimSize, etc
+
+CastResult = TypeVar("CastResult")
+
+
+class Editor(type):
+    def __new__(cls, clsname, parents, namespace):
+        my_type = type.__new__(cls, clsname, parents, dict(namespace))
+        if hasattr(cls, "__orig_bases__"):
+            parent_type = cls.__orig_bases__[0]
+            cast_result_type = parent_type.__args__[0]
+
+            def factory(cls, argument):
+                return cast_result_type.__new__(cls, argument)
+
+            my_type.__new__ = factory
+
+        return my_type
+
+
+class Validatable_(Generic[CastResult], metaclass=Editor):
+    def is_valid(self):
+        return self.is_to_spec()
+
+
+class LowerCaseString(Validatable_[str], str):
+    def is_to_spec(self: str):
+        return self.islower()
+
+
+u = LowerCaseString("Upsala")
