@@ -1,3 +1,5 @@
+import numpy as np
+
 from parachute import shape
 
 
@@ -44,3 +46,11 @@ def test_shapespec_wildcard():
     assert Shape((5, False)).is_valid()
     assert Shape((5, 42098507180)).is_valid()
     assert not Shape((5, 4, 0, 9)).is_valid()
+
+
+def test_non_tuple_iterable():
+    Shape = shape()
+    assert not Shape(["one", "love"]).is_valid()
+    assert Shape([1, 3]).is_valid()
+    assert Shape(np.array([1, 3])).is_valid()
+    assert Shape((i for i in range(3))).is_valid()

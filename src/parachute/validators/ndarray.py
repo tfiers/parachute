@@ -5,7 +5,9 @@ import numpy as np
 import parachute.util as util
 from .base import Validatable, either
 
+# Special type to denote arbitrary shapes, dimension sizes, etc.
 Arbitrary = None
+
 DType = Union[Type[bool], Type[int], Type[float], Type[complex]]
 DimSizeSpec = Union[int, Arbitrary]
 ShapeSpec = Union[Tuple[DimSizeSpec, ...], Arbitrary]
@@ -37,11 +39,18 @@ def shape(spec: ShapeSpec = Arbitrary):
         shape_spec = spec
 
         def __new__(cls, argument: Any):
-            if isinstance(argument, list):
-                argument = tuple(argument)
-            if util.is_of_type(argument, Tuple[int, ...]):
-                instance = tuple.__new__(cls, argument)
-            else:
+            # Accept any iterable, but convert to a tuple
+            try:
+                if isinstance(argument, np.ndarray):
+                    # Convert numpy 'int32' types to plain 'int'.
+                    argument = argument.tolist()
+                tup = tuple(el for el in iter(argument))
+                ShapeType = Tuple[int, ...]
+                if util.is_of_type(tup, ShapeType):
+                    instance = tuple.__new__(cls, tup)
+                else:
+                    raise TypeError
+            except (TypeError, ValueError):
                 instance = tuple.__new__(cls)
                 instance._argument_was_castable = False
             return instance
