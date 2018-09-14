@@ -97,16 +97,15 @@ def test___new__():
 #
 # Idea 4: metaclasses
 
-# Continue: Apply this technique to Validator, DimSize, etc
-
 CastResult = TypeVar("CastResult")
 
 
-class Editor(type):
+class Factor(type):
     def __new__(cls, clsname, parents, namespace):
         my_type = type.__new__(cls, clsname, parents, dict(namespace))
-        if hasattr(cls, "__orig_bases__"):
-            parent_type = cls.__orig_bases__[0]
+        # Check if the given class is a subclass of Validatable
+        if hasattr(my_type, "__orig_bases__"):
+            parent_type = my_type.__orig_bases__[0]
             cast_result_type = parent_type.__args__[0]
 
             def factory(cls, argument):
@@ -117,7 +116,7 @@ class Editor(type):
         return my_type
 
 
-class Validatable_(Generic[CastResult], metaclass=Editor):
+class Validatable_(Generic[CastResult], metaclass=Factor):
     def is_valid(self):
         return self.is_to_spec()
 

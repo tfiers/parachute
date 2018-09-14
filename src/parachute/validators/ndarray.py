@@ -18,16 +18,7 @@ def dimsize(spec: DimSizeSpec = Arbitrary):
     class DimSize(Validatable[int], int):
         dimsize_spec = spec
 
-        def cast(cls, argument: Any):
-            try:
-                return int.__new__(cls, argument)
-            except (TypeError, ValueError) as err:
-                raise CastingError(err)
-
-        def get_default_instance(cls):
-            return int.__new__(cls)
-
-        def is_to_spec(self: int):
+        def is_to_spec(self):
             if self.dimsize_spec is Arbitrary:
                 return True
             else:
@@ -40,7 +31,10 @@ def shape(spec: ShapeSpec = Arbitrary):
     class Shape(Validatable[tuple], tuple):
         shape_spec = spec
 
-        def cast(cls, argument: Any):
+        # Todo: test...
+
+        @staticmethod
+        def cast(argument: Any):
             """
             Accepts any iterable, and attempts to cast it to a tuple of
             Python integers.
@@ -57,12 +51,9 @@ def shape(spec: ShapeSpec = Arbitrary):
             except (TypeError, ValueError) as err:
                 raise CastingError(err)
             else:
-                return tuple.__new__(cls, tup)
+                return tup
 
-        def get_default_instance(cls):
-            return tuple.__new__(cls)
-
-        def is_to_spec(self: ShapeType):
+        def is_to_spec(self):
             if self.shape_spec is Arbitrary:
                 return True
             elif len(self) != len(self.shape_spec):

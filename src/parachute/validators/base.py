@@ -3,16 +3,6 @@ from typing import TypeVar, Generic, Any, Optional, Tuple
 
 import parachute.util as util
 
-CanonicalArgType = TypeVar("CanonicalArgType")
-# The `main` type of a function argument.
-# Consider an example where the argument may be both an np.ndarray, a tuple,
-# and a list, but it should be normalised to an np.ndarray (by this package).
-# The canonical parameter type is then np.ndarray.
-
-CastedArgument = TypeVar("CastedArgument")
-# The type of the argument as it is seen by the function body.
-# A subclass of both the canonical parameter type and of `Validatable`.
-
 
 class CastingError(Exception):
     """
@@ -24,66 +14,95 @@ class CastingError(Exception):
         self.downstream_error = downstream_error
 
 
-class Validatable(Generic[CanonicalArgType], ABC):
-    @classmethod
-    @abstractmethod
-    def cast(cls, argument: Any) -> CastedArgument:
-        """
-        Convert the argument to an instance of the output class.
-        This is a subclass of both the canonical argument type (e.g. float,
-        np.ndarray) and of Validatable.
+CanonicalParamType = TypeVar("CanonicalParamType")
+# The canonical parameter type is the `main` type of a function argument.
+# Consider for example an argument that may be both an np.ndarray, a tuple, and
+# a list. When all arguments should be normalised to np.ndarray, then np.ndarray
+# is the canonical parameter type.
 
-        Raise a CastingError when this cannot be safely done.
-        """
-        raise NotImplementedError
 
-    @classmethod
-    @abstractmethod
-    def get_default_instance(cls) -> CastedArgument:
-        """
-        Return a default value for the canonical argument type.
-        (E.g. `0` for int, `()` for tuple, etc).
-        """
-        raise NotImplementedError
+class Factory(type):
+    def __new__(mcs, clsname, parents, namespace):
+        cls = type.__new__(mcs, clsname, parents, dict(namespace))
+
+        # Check if the given class is a subclass of Validatable (Validatable is
+        # a subclass of typing.Generic, and therefore its own subclasses
+        # contain an `__orig_bases__` attribute).
+        orig_bases = getattr(cls, "__orig_bases__")
+        if orig_bases is not None:
+            # Find the type with which Validatable was parametrised (i.e. the
+            # `str` in `Validatable[str]`).
+            # Note: will this work with subclasses of Validatable-subclasses
+            # (e.g. Vector -> Tensor -> Validatable)?
+            validatable_type = orig_bases[0]
+            canonical_param_type = validatable_type.__args__[0]
+
+            def __new_subclass__(subclass, argument: Any):
+                """
+                Try to cast an argument of arbitrary type to the canonical
+                parameter type, and return the result of this type conversion.
+
+                The class of the returned object is a subclass of both the
+                canonical parameter type and of `Validatable`.
+
+                When the argument cannot be cast to the canonical parameter
+                type, still returns a default instantiation of this type.
+                (This enables code completion in IDE's).
+                """
+                try:
+                    value = subclass.cast(subclass, argument)
+                except CastingError:
+                    # Get a default instantiation of the canonical parameter
+                    # type (e.g. `0` for int, `()` for tuple, etc).
+                    value = canonical_param_type.__new__(canonical_param_type)
+                    cast_was_succesful = False
+                else:
+                    cast_was_succesful = True
+                output = canonical_param_type.__new__(subclass, value)
+                output.raw_argument = argument
+                output.cast_was_succesful = cast_was_succesful
+                return output
+
+            @staticmethod
+            def cast(argument: Any):
+                """
+                Convert the argument to an instance of the canonical
+                parameter type. Raise a CastingError when this cannot be
+                safely done.
+
+                This is a default implementation, which may be overriden by
+                subclasses.
+                """
+                try:
+                    return canonical_param_type.__new__(
+                        canonical_param_type, argument
+                    )
+                except (TypeError, ValueError) as err:
+                    raise CastingError(err)
+
+            cls.__new__ = __new_subclass__
+            cls.cast = cast
+
+        return cls
+
+
+class Validatable(Generic[CanonicalParamType], ABC, metaclass=Factory):
 
     @abstractmethod
-    def is_to_spec(self: CastedArgument) -> bool:
+    def is_to_spec(self) -> bool:
         """
         Whether the argument conforms to certain constraints that are not
         based on type alone. What it means to be "to spec" is determined by
         subclasses.
-
-        When this method is called, `self` is guaranteed to be of type
-        `CastedArgument`. (I.e. a subclass of the canonical argument type).
         """
         raise NotImplementedError
-
-    def __new__(cls, argument: Any) -> CastedArgument:
-        """
-        Try to cast an argument of arbitrary type to (a subclass of) the
-        output type, and return the result of this type conversion.
-
-        When the argument cannot be cast to the output type, still returns a
-        default instantiation of the output type. (This enables code
-        completion in IDE's).
-        """
-        try:
-            output = cls.cast(cls, argument)
-        except CastingError:
-            # The value of `output` does not matter, but its type still does.
-            output = cls.get_default_instance(cls)
-            output._input_was_castable = False
-        else:
-            output._input_was_castable = True
-        return output
 
     def is_valid(self) -> bool:
         """
         Whether the argument could be succesfully cast to the output
-        type AND whether the argument was to spec. (What it means to be "to
-        spec" is defined by subclass implementations of `is_to_spec()`).
+        type AND whether the argument was to spec.
         """
-        return self._input_was_castable and self.is_to_spec()
+        return self.cast_was_succesful and self.is_to_spec()
 
 
 def either(*options):
@@ -91,28 +110,21 @@ def either(*options):
     Checks whether the function argument matches one of the given options.
     """
 
-    class Choice(Validatable[Any]):
+    class Choice(Validatable[object]):
 
         options_: Tuple[Any, ...] = options
 
-        def cast(cls, argument: Any):
+        @staticmethod
+        def cast(argument: Any):
             """
             Do not attempt any casting (as we do not know what the output
             type should be -- the options could be of different types).
-
-            Save the original argument on a new Choice instance.
             """
-            output = object.__new__(cls)
-            output.value = argument
-            return output
-
-        def get_default_instance(cls):
-            """ Never called, as `cast` never raises a casting error. """
-            pass
+            return argument
 
         def is_to_spec(self) -> bool:
             return any(
-                Choice.value_matches_option(self.value, option)
+                Choice.value_matches_option(self.raw_argument, option)
                 for option in self.options_
             )
 
