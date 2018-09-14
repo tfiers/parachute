@@ -1,7 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 import parachute.util as util
+
+
+class CastingError(Exception):
+    """
+    Raised when a function argument cannot be cast to the correct type for
+    the corresponding parameter.
+    """
+
+    def __init__(self, downstream_error: Optional[Exception] = None):
+        self.downstream_error = downstream_error
 
 
 class Validatable(ABC):

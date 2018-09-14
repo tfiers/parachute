@@ -3,12 +3,13 @@ from typing import Union, Tuple, Type, Optional, Any
 import numpy as np
 
 import parachute.util as util
-from .base import Validatable, either
+from .base import Validatable, CastingError, either
 
 # Special type to denote arbitrary shapes, dimension sizes, etc.
 Arbitrary = None
 
 DType = Union[Type[bool], Type[int], Type[float], Type[complex]]
+ShapeType = Tuple[int, ...]
 DimSizeSpec = Union[int, Arbitrary]
 ShapeSpec = Union[Tuple[DimSizeSpec, ...], Arbitrary]
 
@@ -38,19 +39,32 @@ def shape(spec: ShapeSpec = Arbitrary):
     class Shape(tuple, Validatable):
         shape_spec = spec
 
-        def __new__(cls, argument: Any):
-            # Accept any iterable, but convert to a tuple
+        @classmethod
+        def cast(cls, argument: Any) -> ShapeType:
+            """
+            Accepts any iterable, and attempts to cast to a tuple of
+            Python int's.
+            """
             try:
                 if isinstance(argument, np.ndarray):
-                    # Convert numpy 'int32' types to plain 'int'.
+                    # Convert numpy 'int32'-like types to plain 'int'.
                     argument = argument.tolist()
+
                 tup = tuple(el for el in iter(argument))
-                ShapeType = Tuple[int, ...]
-                if util.is_of_type(tup, ShapeType):
-                    instance = tuple.__new__(cls, tup)
-                else:
+
+                if not util.is_of_type(tup, ShapeType):
                     raise TypeError
-            except (TypeError, ValueError):
+
+            except Exception as err:
+                raise CastingError(err)
+
+            else:
+                return tuple.__new__(cls, tup)
+
+        def __new__(cls, argument: Any):
+            try:
+                instance = Shape.cast(argument)
+            except CastingError:
                 instance = tuple.__new__(cls)
                 instance._argument_was_castable = False
             return instance
@@ -92,11 +106,20 @@ def array(
         dtype_spec = dtype
         shape_spec = shape
 
-        def __new__(cls, *args, **kwargs) -> np.ndarray:
-            obj = np.ndarray.__new__(cls, shape=None)
-            return obj
+        def __new__(cls, argument):
+            try:
+                if not isinstance(argument, np.ndarray):
+                    argument = np.array(argument)
+                cast = argument.astype(self.dtype_spec, casting="safe")
+                instance = np.ndarray.__new__(
+                    cls, shape=cast.shape, buffer=cast
+                )
+            except (TypeError, ValueError):
+                instance = np.ndarray.__new__(cls)
+                instance._argument_was_castable = False
+            return instance
 
         def is_to_spec(self):
-            pass
+            return True
 
     return Array
