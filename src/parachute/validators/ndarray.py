@@ -137,3 +137,11 @@ def array(
             return shape(self.shape_spec_)(self.shape).is_valid()
 
     return Array
+
+
+def vector(dtype: DType = float, length: DimSizeSpec = Arbitrary):
+    """
+    Checks whether the argument is a numeric vector of the right data type and
+    length.
+    """
+    return array(dtype, shape_spec=(length,))

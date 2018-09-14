@@ -21,7 +21,7 @@ def test_type_arbitrary():
     # fmt: on
 
 
-def test_type_higher_order():
+def test_type_arbitrary_higher_order():
     Array = array()
     assert Array(((((4))))).is_valid()
     # fmt: off
