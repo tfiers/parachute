@@ -18,6 +18,25 @@ def dimsize(spec: DimSizeSpec = Arbitrary):
     class DimSize(Validatable[int], int):
         dimsize_spec = spec
 
+        @staticmethod
+        def cast(argument: Any):
+            """
+            Convert the argument to an instance of the canonical
+            parameter type. Raise a CastingError when this cannot be
+            safely done.
+
+            This is a default implementation, which may be overriden by
+            subclasses.
+            """
+            try:
+                number = float(argument)
+                if number.is_integer():
+                    return int(argument)
+                else:
+                    raise ValueError
+            except (TypeError, ValueError) as err:
+                raise CastingError(err)
+
         def is_to_spec(self):
             if self.dimsize_spec is Arbitrary:
                 return True

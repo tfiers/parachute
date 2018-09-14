@@ -21,14 +21,14 @@ CanonicalParamType = TypeVar("CanonicalParamType")
 # is the canonical parameter type.
 
 
-class Factory(type):
+class Factory(type, ABC):
     def __new__(mcs, clsname, parents, namespace):
         cls = type.__new__(mcs, clsname, parents, dict(namespace))
 
         # Check if the given class is a subclass of Validatable (Validatable is
         # a subclass of typing.Generic, and therefore its own subclasses
         # contain an `__orig_bases__` attribute).
-        orig_bases = getattr(cls, "__orig_bases__")
+        orig_bases = getattr(cls, "__orig_bases__", None)
         if orig_bases is not None:
             # Find the type with which Validatable was parametrised (i.e. the
             # `str` in `Validatable[str]`).
@@ -50,43 +50,40 @@ class Factory(type):
                 (This enables code completion in IDE's).
                 """
                 try:
-                    value = subclass.cast(subclass, argument)
+                    value = subclass.cast(argument)
+                    cast_was_succesful = True
                 except CastingError:
                     # Get a default instantiation of the canonical parameter
                     # type (e.g. `0` for int, `()` for tuple, etc).
                     value = canonical_param_type.__new__(canonical_param_type)
                     cast_was_succesful = False
-                else:
-                    cast_was_succesful = True
-                output = canonical_param_type.__new__(subclass, value)
-                output.raw_argument = argument
+                try:
+                    output = canonical_param_type.__new__(subclass, value)
+                except TypeError:
+                    # The canonical parameter type did not accept arguments.
+                    # (this is e.g. the case for `object`).
+                    output = canonical_param_type.__new__(subclass)
                 output.cast_was_succesful = cast_was_succesful
+                output.raw_argument = argument
                 return output
 
-            @staticmethod
-            def cast(argument: Any):
-                """
-                Convert the argument to an instance of the canonical
-                parameter type. Raise a CastingError when this cannot be
-                safely done.
-
-                This is a default implementation, which may be overriden by
-                subclasses.
-                """
-                try:
-                    return canonical_param_type.__new__(
-                        canonical_param_type, argument
-                    )
-                except (TypeError, ValueError) as err:
-                    raise CastingError(err)
-
             cls.__new__ = __new_subclass__
-            cls.cast = cast
 
         return cls
 
 
-class Validatable(Generic[CanonicalParamType], ABC, metaclass=Factory):
+class Validatable(Generic[CanonicalParamType], metaclass=Factory):
+    @abstractmethod
+    def cast(argument: Any):
+        """
+        Convert the argument to an instance of the canonical
+        parameter type. Raise a CastingError when this cannot be
+        safely done.
+
+        This is a default implementation, which may be overriden by
+        subclasses.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def is_to_spec(self) -> bool:
