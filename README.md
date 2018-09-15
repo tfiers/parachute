@@ -1,4 +1,5 @@
 # Parachute
+[![Test coverage](https://img.shields.io/codecov/c/github/tfiers/parachute.svg?label=Test%20coverage)](https://codecov.io/gh/tfiers/parachute)
 [![License](https://img.shields.io/badge/License-MIT-780cc0.svg)](https://github.com/tfiers/parachute/blob/master/LICENSE)
 
 
