@@ -53,17 +53,20 @@ class ValidatedArgumentFactory(type, ABC):
                 try:
                     value = subclass.cast(argument)
                     cast_was_succesful = True
-                except CastingError:
+                except CastingError as error:
                     # Get a default instantiation of the canonical parameter
                     # type (e.g. `0` for int, `()` for tuple, etc).
                     value = subclass.get_dummy_value(canonical_param_type)
                     cast_was_succesful = False
+                    casting_error = error
 
                 output = subclass.get_populated_instance(
                     canonical_param_type, value
                 )
-                output.cast_was_succesful = cast_was_succesful
                 output.raw_argument = argument
+                output.cast_was_succesful = cast_was_succesful
+                if not cast_was_succesful:
+                    output.casting_error = casting_error
                 return output
 
             cls.__new__ = __new_subclass__
