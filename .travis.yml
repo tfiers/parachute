@@ -9,7 +9,19 @@ matrix:
       sudo: true
 
 install:
-  - pip install .
+  # Install parachute
+  # It seems that the only way for coverage.py to work, is to install parachute
+  # in "editable" mode.
+  - pip install -e .
+  # Upgrade or install:
+  # pytest -- Test runner
+  # coverage -- Measure source code coverage of execution
+  # pytest-cov -- Plugin for pytest to help run `coverage`
+  # codecov -- Upload coverage report
+  - pip install --upgrade pytest coverage pytest-cov codecov
 
 script:
-  - pytest
+  - pytest --cov=src
+
+after_success:
+  - codecov
