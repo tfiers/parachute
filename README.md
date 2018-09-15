@@ -15,11 +15,12 @@ For contributors
 [![Code style: black](https://img.shields.io/badge/Code_formatting-Black-black.svg)](https://github.com/ambv/black)
 
 
-The test suite depends on [PyTest](https://docs.pytest.org/en/latest/):
+The test suite depends on [PyTest](https://docs.pytest.org/en/latest/).
+To run tests locally:
 ```
 pip install pytest
 ```
-To run tests locally, go to the project root directory and run:
+Then go to the project root directory and run:
 ```
 pytest
 ```
