@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from inspect import isclass
 from typing import TypeVar, Generic, Any, Optional, Tuple, Type
 
 import parachute.util as util
@@ -165,7 +166,9 @@ def either(*options):
         @staticmethod
         def value_matches_option(value: Any, option: Any) -> bool:
             """ Whether a value is a valid input for an option. """
-            if util.is_literal(option):
+            if isclass(option) and issubclass(option, ValidatedArgument):
+                return option(value).is_valid()
+            elif util.is_literal(option):
                 return value == option
             else:
                 return util.is_of_type(value, option)

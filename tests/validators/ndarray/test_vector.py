@@ -37,6 +37,7 @@ def test_vector_int():
     Vector = vector(int)
     assert not Vector("not a numeric vector").is_valid()
     assert Vector([1, 2]).is_valid()
+    assert not Vector([1.0, 2.0]).is_valid()
     assert Vector((1, 2)).is_valid()
     assert Vector((True, False)).is_valid()
     assert not Vector((9.9, False)).is_valid()

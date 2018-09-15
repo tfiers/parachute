@@ -1,6 +1,8 @@
 from typing import Union
 
-from parachute import either
+import numpy as np
+
+from parachute import either, vector
 
 
 def test_different_objects():
@@ -36,3 +38,16 @@ def test_complextypes():
     assert Choice("whatevs").is_valid()
     assert Choice(True).is_valid()
     assert not Choice(44).is_valid()
+
+
+def test_validated_types():
+    Choice = either("a", vector(int, length=2))
+    assert Choice("a").is_valid()
+    assert not Choice("b").is_valid()
+    assert Choice([1, 2]).is_valid()
+    assert Choice(np.array((4, 4))).is_valid()
+    assert not Choice((4.0, 2.0)).is_valid()
+    assert not Choice((4.1, 2.0)).is_valid()
+    assert not Choice([1, 2, 3]).is_valid()
+    assert not Choice([1]).is_valid()
+    assert not Choice([[1, 2]]).is_valid()
