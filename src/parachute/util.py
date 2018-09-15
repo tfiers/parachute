@@ -45,7 +45,7 @@ def is_of_type(value: Any, ttype: Type) -> bool:
         except TypeError:
             return False
     else:
-        msg = f"The value for the `ttype` parameter ({ttype}) must be a type."
+        msg = f"Argument `ttype` must be a type, but got {_repr(ttype)}."
         raise TypeError(msg)
 
 

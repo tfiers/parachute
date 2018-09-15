@@ -82,7 +82,7 @@ class ValidatedArgument(
 
     @classmethod
     @abstractmethod
-    def cast(cls, argument: Any):
+    def cast(cls, argument: Any) -> CanonicalParamType:
         """
         Convert the argument to an instance of the canonical
         parameter type. Raise a CastingError when this cannot be
@@ -127,9 +127,8 @@ class ValidatedArgument(
             return canonical_param_type.__new__(cls, [custom args and kwargs]),
 
         where the custom (keyword) arguments ensure that the instance is
-        populated with the given value.
-        Also make sure that the overriding method is also annotated as a
-        class method!
+        populated with the given value. Also make sure that the overriding
+        method is annotated as a class method!
         """
         return canonical_param_type.__new__(cls, value)
 
@@ -152,14 +151,14 @@ def either(*options):
             return argument
 
         @classmethod
-        def get_populated_instance(
-            cls, canonical_param_type: Type[object], value: object = None
-        ):
-            return object.__new__(cls)
+        def get_populated_instance(cls, canonical_param_type, value):
+            obj = object.__new__(cls)
+            obj.value = value
+            return obj
 
         def is_to_spec(self) -> bool:
             return any(
-                Choice.value_matches_option(self.raw_argument, option)
+                Choice.value_matches_option(self.value, option)
                 for option in self.options_
             )
 
