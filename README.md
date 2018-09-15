@@ -1,4 +1,6 @@
 # Parachute
+[![License](https://img.shields.io/badge/License-MIT-780cc0.svg)](https://github.com/tfiers/parachute/blob/master/LICENSE)
+
 
 Neat input validation of function calls using Python's type hint system.
 
