@@ -12,8 +12,10 @@ install:
   - pip install .
   - pip install pytest-cov codecov
 
+# Run tests, and measure source code coverage.
 script:
-  - pytest --cov=./
+  - pytest --cov=src/
 
+# Upload coverate report
 after_success:
   - codecov
