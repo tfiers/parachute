@@ -64,8 +64,17 @@ class ArgumentError(Exception):
 
     def __repr__(self) -> str:
         annotation = self.function.__annotations__.get(self.arg_name)
-        return (
-            f"{self.arg_name} (of {self.function.__name__})\n"
-            f"should match {_repr(annotation)}, but got "
-            f"{_repr(self.value)} (of type {_repr(type(self.value))}) instead."
-        )
+        header = "Argument did not match parameter annotation."
+        info = {
+            "Function": self.function.__qualname__,
+            "Parameter": self.arg_name,
+            "Annotation": _repr(annotation),
+            "Argument": _repr(self.value),
+            "Argument type": _repr(type(self.value)),
+        }
+        info_lines = [f"{name: <14} {val}" for name, val in info.items()]
+        msg = header + "\n" + "\n".join(info_lines)
+        return msg
+
+    # Must override __str__ of Exception to get nice print in tracebacks.
+    __str__ = __repr__
