@@ -1,7 +1,6 @@
 from typing import Tuple
 
 import pytest
-
 from parachute import input_validated, ArgumentError, either, vector
 
 
@@ -11,6 +10,7 @@ def my_function(
     b: str = "bb",
     c: vector(length=2) = (4.0, 4),
     d: Tuple[str, bool] = ("yes", True),
+    e: float = 22.0,
 ):
     return a
 
@@ -64,3 +64,17 @@ def test_kwargs():
 
 def test_kwarg_out_of_order():
     my_function("xx", d=("jo", False))
+
+
+def test_int_for_float():
+    # An int should work when type = float
+    # (typeguard handles this).
+    my_function("xx", e=22)
+
+
+def test_check_default():
+    with pytest.raises(ArgumentError):
+
+        @input_validated
+        def func(a: float = "jojo"):
+            pass

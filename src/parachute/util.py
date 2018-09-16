@@ -35,12 +35,10 @@ def is_of_type(value: Any, ttype: Type) -> bool:
     """
     Returns whether a value is of a given type.
     """
-    if is_python_type(ttype):
-        return isinstance(value, ttype)
-    elif is_typing_type(ttype):
+    if is_type(ttype):
         # Defer to the "typeguard" package:
         try:
-            typeguard.check_type("", value, expected_type=ttype)
+            typeguard.check_type("value", value, expected_type=ttype)
             return True
         except TypeError:
             return False
