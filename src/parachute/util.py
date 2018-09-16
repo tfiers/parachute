@@ -1,5 +1,5 @@
 import typing
-from inspect import isclass
+from inspect import isclass, getsource
 from typing import Callable, Any, Type
 
 import typeguard
@@ -58,7 +58,7 @@ def make_docstring(function: Callable):
     plot/signal.py), relying on interleaved comments and Python's type system.
     This function extracts these comments and adds them to the docstring.
     """
-    source = inspect.getsource(function)
+    source = getsource(function)
     source_lines = [l.strip() for l in source.splitlines()]
     # Get first line starting with "def"
     signature_start = next(
