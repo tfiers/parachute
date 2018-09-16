@@ -1,10 +1,11 @@
 from typing import Tuple
 
 import pytest
-from parachute import input_validated, ArgumentError, either, vector
+
+from parachute import validate_inputs, ArgumentError, either, vector
 
 
-@input_validated
+@validate_inputs
 def my_function(
     a: either("xx", bool),
     b: str = "bb",
@@ -75,6 +76,6 @@ def test_int_for_float():
 def test_check_default():
     with pytest.raises(ArgumentError):
 
-        @input_validated
+        @validate_inputs
         def func(a: float = "jojo"):
             pass

@@ -20,7 +20,7 @@ def is_valid(value, Annotation) -> bool:
         return is_of_type(value, Annotation)
 
 
-def input_validated(function: Callable) -> Callable:
+def validate_inputs(function: Callable) -> Callable:
     """
     Decorator that validates function call arguments (and default argument
     values) according to argument annotations / type hints.
