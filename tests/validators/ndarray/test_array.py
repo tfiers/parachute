@@ -71,10 +71,10 @@ def test_ndim_2():
 
 def test_repr():
     Array = array(complex, ndim=2)
-    shape_str = shape((Arbitrary, Arbitrary)).get_annotation_str()
+    shape_str = shape((Arbitrary, Arbitrary)).short_str()
     expected_str = (
         "NumPy ndarray-like, with numeric type "
-        "compatible with `complex`, "
-        f"and shape according to {shape_str}"
+        "compatible to `complex`, "
+        f"and shape `{shape_str}`."
     )
     assert Array.get_annotation_str() == expected_str

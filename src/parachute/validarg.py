@@ -1,4 +1,5 @@
 import inspect
+import textwrap
 from functools import wraps
 from typing import Callable, Any
 
@@ -64,18 +65,21 @@ class ArgumentError(Exception):
         self.value = value
 
     def __repr__(self) -> str:
+        func_name = self.function.__qualname__
         annotation = self.function.__annotations__.get(self.arg_name)
-        header = "Argument did not match parameter annotation."
-        info = {
-            "Function": self.function.__qualname__,
-            "Parameter": self.arg_name,
-            "Annotation": pretty_str(annotation),
-            "Argument": pretty_str(self.value),
-            "Argument type": pretty_str(type(self.value)),
-        }
-        info_lines = [f"{name: <14} {val}" for name, val in info.items()]
-        msg = header + "\n" + "\n".join(info_lines)
-        return msg
+        labelled_annotation = f"Annotation: {pretty_str(annotation)}"
+        lines = (
+            (
+                f"Argument `{self.arg_name}` of {func_name} did not match "
+                f"its parameter annotation."
+            ),
+            "",
+            textwrap.fill(labelled_annotation, width=50),
+            "",
+            f"Got argument of type `{pretty_str(type(self.value))}` and value:",
+            pretty_str(self.value),
+        )
+        return "\n".join(lines)
 
     # Must override __str__ of Exception to get nice print in tracebacks.
     __str__ = __repr__

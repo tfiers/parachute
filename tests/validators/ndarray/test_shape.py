@@ -58,13 +58,13 @@ def test_non_tuple_iterable():
 
 
 def test_repr():
-    blah = {
-        None: "Array shape arbitrary",
-        (): "Array shape ()",
-        (0,): "Array shape (0,)",
-        (None,): "Array shape (*,)",
-        (5, 4): "Array shape (5, 4)",
-        (5, None): "Array shape (5, *)",
+    pairs = {
+        None: "Array shape arbitrary.",
+        (): "Array shape ().",
+        (0,): "Array shape (0,).",
+        (None,): "Array shape (arbitrary,).",
+        (5, 4): "Array shape (5, 4).",
+        (5, None): "Array shape (5, arbitrary).",
     }
-    for spec, string in blah.items():
+    for spec, string in pairs.items():
         assert shape(spec).get_annotation_str() == string

@@ -25,3 +25,12 @@ def test_dimspec_concrete():
     assert not DimSize(42098507180).is_valid()
     assert not DimSize(False).is_valid()
     assert not DimSize(True).is_valid()
+
+
+def test_repr():
+    pairs = {
+        None: "Array dimension size arbitrary.",
+        4: "Array dimension size 4.",
+    }
+    for spec, string in pairs.items():
+        assert dimsize(spec).get_annotation_str() == string

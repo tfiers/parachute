@@ -102,14 +102,13 @@ def _trim_lines(string: str):
 
 def pretty_str(x: Any) -> str:
     """
-    Formats a literal or a type for pretty printing.
+    Formats types for pretty printing.
     """
     if is_of_type(x, ValidatedArgument):
         text = x.get_annotation_str()
     elif type(x) == type:
+        # We want `int` instead of `<class 'int'>`
         text = x.__name__
-    elif type(x) == str:
-        text = f'"{x}"'
     else:
-        text = str(x)
+        text = repr(x)
     return text
