@@ -1,5 +1,4 @@
 import inspect
-from dataclasses import dataclass
 from functools import wraps
 from typing import Callable, Any
 
@@ -55,13 +54,13 @@ def check_arg(function: Callable, arg_name: str, value: Any) -> None:
         raise ArgumentError(function, arg_name, value)
 
 
-@dataclass
 class ArgumentError(Exception):
     """ Raised when a function is called with an invalid argument. """
 
-    function: Callable
-    arg_name: str
-    value: Any
+    def __init__(self, function: Callable, arg_name: str, value: Any):
+        self.function = function
+        self.arg_name = arg_name
+        self.value = value
 
     def __repr__(self) -> str:
         annotation = self.function.__annotations__.get(self.arg_name)
