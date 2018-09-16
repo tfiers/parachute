@@ -105,7 +105,7 @@ def pretty_str(x: Any) -> str:
     Formats a literal or a type for pretty printing.
     """
     if is_of_type(x, ValidatedArgument):
-        text = x.annotation_str
+        text = x.get_annotation_str()
     elif type(x) == type:
         text = x.__name__
     elif type(x) == str:

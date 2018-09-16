@@ -84,7 +84,7 @@ class ValidatedArgument(ABC, Generic[CanonicalParamType]):
 
     @classmethod
     @abstractmethod
-    def annotation_str(cls) -> str:
+    def get_annotation_str(cls) -> str:
         """
         A string representation of this class when used as a type hint /
         parameter annotation.
@@ -140,7 +140,7 @@ def either(*options):
         options_: Tuple[Any, ...] = options
 
         @classmethod
-        def annotation_str(cls):
+        def get_annotation_str(cls):
             return f"One of {set(options)}"
 
         @classmethod

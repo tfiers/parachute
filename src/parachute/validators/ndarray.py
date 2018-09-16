@@ -1,7 +1,7 @@
 from typing import Union, Tuple, Type, Optional, Any
 
 import numpy as np
-import parachute.util as util
+from parachute.util import is_of_type, pretty_str
 
 from .base import ValidatedArgument, CastingError, either
 
@@ -22,6 +22,13 @@ def dimsize(spec: DimSizeSpec = Arbitrary):
 
     class DimSize(ValidatedArgument[int], int):
         dimsize_spec = spec
+
+        @classmethod
+        def get_annotation_str(cls) -> str:
+            if cls.dimsize_spec is Arbitrary:
+                return "*"
+            else:
+                return str(cls.dimsize_spec)
 
         @classmethod
         def cast(cls, argument: Any):
@@ -48,13 +55,6 @@ def dimsize(spec: DimSizeSpec = Arbitrary):
             else:
                 return self == self.dimsize_spec
 
-        @classmethod
-        def annotation_str(cls) -> str:
-            if cls.dimsize_spec is Arbitrary:
-                return "*"
-            else:
-                return str(cls.dimsize_spec)
-
     return DimSize
 
 
@@ -66,6 +66,18 @@ def shape(spec: ShapeSpec = Arbitrary):
 
     class Shape(ValidatedArgument[tuple], tuple):
         shape_spec: ShapeSpec = spec
+
+        @classmethod
+        def get_annotation_str(cls) -> str:
+            if cls.shape_spec == Arbitrary:
+                shape_str = "arbitrary"
+            else:
+                tup = tuple(
+                    pretty_str(dimsize(dimsize_spec))
+                    for dimsize_spec in cls.shape_spec
+                )
+                shape_str = str(tup).replace("'", "")
+            return f"Array shape {shape_str}"
 
         @classmethod
         def cast(cls, argument: Any) -> ShapeType:
@@ -80,7 +92,7 @@ def shape(spec: ShapeSpec = Arbitrary):
                 # Check if the input is iterable
                 tup = tuple(el for el in iter(argument))
                 # Check if the elements are integers.
-                if not util.is_of_type(tup, ShapeType):
+                if not is_of_type(tup, ShapeType):
                     raise TypeError
             except (TypeError, ValueError) as err:
                 raise CastingError(err)
@@ -97,14 +109,6 @@ def shape(spec: ShapeSpec = Arbitrary):
                     dimsize(dimsize_spec)(dimsize_).is_valid()
                     for (dimsize_spec, dimsize_) in zip(self.shape_spec, self)
                 )
-
-        @classmethod
-        def annotation_str(cls) -> str:
-            tup = tuple(
-                dimsize(dimsize_spec).annotation_str()
-                for dimsize_spec in cls.shape_spec
-            )
-            return str(tup).replace("'", "")
 
     return Shape
 
@@ -132,6 +136,15 @@ def array(
         shape_spec_ = shape_spec
 
         @classmethod
+        def get_annotation_str(cls) -> str:
+            return (
+                f"NumPy ndarray-like, with numeric type "
+                f"compatible with `{pretty_str(cls.dtype_)}`, "
+                f"and shape according to "
+                f"{pretty_str(shape(cls.shape_spec_))}"
+            )
+
+        @classmethod
         def cast(cls, argument: Any) -> np.ndarray:
             try:
                 if not isinstance(argument, np.ndarray):
@@ -153,14 +166,6 @@ def array(
 
         def is_to_spec(self):
             return shape(self.shape_spec_)(self.shape).is_valid()
-
-        @classmethod
-        def annotation_str(cls) -> str:
-            return (
-                f"np.ndarray-like, with dtype "
-                f"{util.pretty_str(cls.dtype_)}-compatible "
-                f"and shape according to spec self.shape_spec_"
-            )
 
     return Array
 

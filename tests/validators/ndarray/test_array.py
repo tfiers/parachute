@@ -1,6 +1,6 @@
 import numpy as np
 
-from parachute import array
+from parachute import array, shape, Arbitrary
 
 
 def test_type_arbitrary():
@@ -67,3 +67,14 @@ def test_ndim_2():
     assert not Array([1, 2]).is_valid()
     assert Array([[1, 2], [3, 4]]).is_valid()
     assert not Array([[[1, 2], [3, 4]]]).is_valid()
+
+
+def test_repr():
+    Array = array(complex, ndim=2)
+    shape_str = shape((Arbitrary, Arbitrary)).get_annotation_str()
+    expected_str = (
+        "NumPy ndarray-like, with numeric type "
+        "compatible with `complex`, "
+        f"and shape according to {shape_str}"
+    )
+    assert Array.get_annotation_str() == expected_str

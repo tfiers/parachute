@@ -35,6 +35,7 @@ def test_shapespec_fix():
 
 def test_shapespec_wildcard():
     Shape = shape((5, None))
+
     assert not Shape("not a shapespec").is_valid()
     assert not Shape((4, "4")).is_valid()
     assert not Shape((4, None)).is_valid()
@@ -54,3 +55,16 @@ def test_non_tuple_iterable():
     assert Shape([1, 3]).is_valid()
     assert Shape(np.array([1, 3])).is_valid()
     assert Shape((i for i in range(3))).is_valid()
+
+
+def test_repr():
+    blah = {
+        None: "Array shape arbitrary",
+        (): "Array shape ()",
+        (0,): "Array shape (0,)",
+        (None,): "Array shape (*,)",
+        (5, 4): "Array shape (5, 4)",
+        (5, None): "Array shape (5, *)",
+    }
+    for spec, string in blah.items():
+        assert shape(spec).get_annotation_str() == string
