@@ -111,5 +111,5 @@ def pretty_str(x: Any) -> str:
     elif type(x) == str:
         text = f'"{x}"'
     else:
-        text = pretty_str(x)
+        text = str(x)
     return text
