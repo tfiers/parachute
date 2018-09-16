@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from inspect import isclass
 from typing import TypeVar, Generic, Any, Optional, Tuple, Type
 
@@ -22,7 +22,7 @@ CanonicalParamType = TypeVar("CanonicalParamType")
 # is the canonical parameter type.
 
 
-class ValidatedArgumentFactory(type, ABC):
+class ValidatedArgumentFactory(type, metaclass=ABCMeta):
     def __new__(mcs, clsname, parents, namespace):
         cls = type.__new__(mcs, clsname, parents, dict(namespace))
 
