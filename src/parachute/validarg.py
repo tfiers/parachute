@@ -2,8 +2,8 @@ import inspect
 from functools import wraps
 from typing import Callable, Any
 
-from .util import _repr, is_of_type
-from .validators.base import ValidatedArgument
+from parachute.util import is_of_type, pretty_str
+from parachute.validators.base import ValidatedArgument
 
 
 def is_valid(value, Annotation) -> bool:
@@ -12,8 +12,9 @@ def is_valid(value, Annotation) -> bool:
     """
     if Annotation is None:
         return True
-    elif ValidatedArgument.is_subclass(Annotation):
-        return Annotation(value).is_valid()
+    elif is_of_type(Annotation, ValidatedArgument):
+        validated_argument = Annotation(value)
+        return validated_argument.is_valid()
     else:
         return is_of_type(value, Annotation)
 
@@ -68,9 +69,9 @@ class ArgumentError(Exception):
         info = {
             "Function": self.function.__qualname__,
             "Parameter": self.arg_name,
-            "Annotation": _repr(annotation),
-            "Argument": _repr(self.value),
-            "Argument type": _repr(type(self.value)),
+            "Annotation": pretty_str(annotation),
+            "Argument": pretty_str(self.value),
+            "Argument type": pretty_str(type(self.value)),
         }
         info_lines = [f"{name: <14} {val}" for name, val in info.items()]
         msg = header + "\n" + "\n".join(info_lines)

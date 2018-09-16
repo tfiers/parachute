@@ -1,8 +1,8 @@
 from typing import Union, Tuple, Type, Optional, Any
 
 import numpy as np
-
 import parachute.util as util
+
 from .base import ValidatedArgument, CastingError, either
 
 # Special type to denote arbitrary shapes, dimension sizes, etc.
@@ -48,6 +48,13 @@ def dimsize(spec: DimSizeSpec = Arbitrary):
             else:
                 return self == self.dimsize_spec
 
+        @classmethod
+        def annotation_str(cls) -> str:
+            if cls.dimsize_spec is Arbitrary:
+                return "*"
+            else:
+                return str(cls.dimsize_spec)
+
     return DimSize
 
 
@@ -58,7 +65,7 @@ def shape(spec: ShapeSpec = Arbitrary):
     """
 
     class Shape(ValidatedArgument[tuple], tuple):
-        shape_spec = spec
+        shape_spec: ShapeSpec = spec
 
         @classmethod
         def cast(cls, argument: Any) -> ShapeType:
@@ -90,6 +97,14 @@ def shape(spec: ShapeSpec = Arbitrary):
                     dimsize(dimsize_spec)(dimsize_).is_valid()
                     for (dimsize_spec, dimsize_) in zip(self.shape_spec, self)
                 )
+
+        @classmethod
+        def annotation_str(cls) -> str:
+            tup = tuple(
+                dimsize(dimsize_spec).annotation_str()
+                for dimsize_spec in cls.shape_spec
+            )
+            return str(tup).replace("'", "")
 
     return Shape
 
@@ -126,20 +141,26 @@ def array(
             except (TypeError, ValueError) as err:
                 raise CastingError(err)
 
-        @staticmethod
-        def get_dummy_value(canonical_param_type):
+        @classmethod
+        def get_dummy_value(cls):
             return np.array([])
 
         @classmethod
-        def get_populated_instance(
-            cls, canonical_param_type, value: np.ndarray
-        ):
+        def get_populated_instance(cls, value: np.ndarray):
             return np.ndarray.__new__(
                 cls, shape=value.shape, dtype=value.dtype, buffer=value
             )
 
         def is_to_spec(self):
             return shape(self.shape_spec_)(self.shape).is_valid()
+
+        @classmethod
+        def annotation_str(cls) -> str:
+            return (
+                f"np.ndarray-like, with dtype "
+                f"{util.pretty_str(cls.dtype_)}-compatible "
+                f"and shape according to spec self.shape_spec_"
+            )
 
     return Array
 

@@ -1,6 +1,5 @@
-from abc import ABCMeta, abstractmethod
-from inspect import isclass
-from typing import TypeVar, Generic, Any, Optional, Tuple, Type
+from abc import ABC, abstractmethod
+from typing import TypeVar, Generic, Any, Optional, Tuple
 
 import parachute.util as util
 
@@ -22,61 +21,38 @@ CanonicalParamType = TypeVar("CanonicalParamType")
 # is the canonical parameter type.
 
 
-class ValidatedArgumentFactory(type, metaclass=ABCMeta):
-    def __new__(mcs, clsname, parents, namespace):
-        cls = type.__new__(mcs, clsname, parents, dict(namespace))
+class ValidatedArgument(ABC, Generic[CanonicalParamType]):
+    def __new__(cls, argument: Any):
+        """
+        Return a new ValidatedArgument instance, populated with the given
+        argument.
 
-        # Check if the given class is a subclass of Validatable (Validatable is
-        # a subclass of typing.Generic, and therefore its own subclasses
-        # contain an `__orig_bases__` attribute).
-        orig_bases = getattr(cls, "__orig_bases__", None)
-        if orig_bases is not None:
-            # Find the type with which Validatable was parametrised (i.e. the
-            # `str` in `Validatable[str]`).
-            # Note: will this work with subclasses of Validatable-subclasses
-            # (e.g. Vector -> Tensor -> Validatable)?
-            validatable_type = orig_bases[0]
-            canonical_param_type = validatable_type.__args__[0]
+        For subclasses of ValidatedArgument, the returned instance is a
+        subclass of both ValidatedArgument AND of the canonical parameter type.
 
-            def __new_subclass__(subclass, argument: Any):
-                """
-                Try to cast an argument of arbitrary type to the canonical
-                parameter type, and return the result of this type conversion.
+        The argument is cast to the canonical parameter type before
+        populating the new instance. When this type conversion cannot be
+        performed succesfully, the new instance is populated with a dummy
+        value of the canonical parameter type.
+        """
+        try:
+            value = cls.cast(argument)
+            cast_was_succesful = True
+        except CastingError as error:
+            value = cls.get_dummy_value()
+            cast_was_succesful = False
+            casting_error = error
 
-                The class of the returned object is a subclass of both the
-                canonical parameter type and of `Validatable`.
+        instance = cls.get_populated_instance(value)
+        # Accessing the raw argument should not be necessary. But we're not
+        # gonna be purist here, and let users of the package access it if
+        # they want.
+        instance.raw_argument = argument
+        instance.cast_was_succesful = cast_was_succesful
+        if not cast_was_succesful:
+            instance.casting_error = casting_error
+        return instance
 
-                When the argument cannot be cast to the canonical parameter
-                type, still returns a default instantiation of this type.
-                (This enables code completion in IDE's).
-                """
-                try:
-                    value = subclass.cast(argument)
-                    cast_was_succesful = True
-                except CastingError as error:
-                    # Get a default instantiation of the canonical parameter
-                    # type (e.g. `0` for int, `()` for tuple, etc).
-                    value = subclass.get_dummy_value(canonical_param_type)
-                    cast_was_succesful = False
-                    casting_error = error
-
-                output = subclass.get_populated_instance(
-                    canonical_param_type, value
-                )
-                output.raw_argument = argument
-                output.cast_was_succesful = cast_was_succesful
-                if not cast_was_succesful:
-                    output.casting_error = casting_error
-                return output
-
-            cls.__new__ = __new_subclass__
-
-        return cls
-
-
-class ValidatedArgument(
-    Generic[CanonicalParamType], metaclass=ValidatedArgumentFactory
-):
     def is_valid(self) -> bool:
         """
         Whether the instantiation argument could be succesfully cast to the
@@ -106,22 +82,26 @@ class ValidatedArgument(
         """
         raise NotImplementedError
 
-    @staticmethod
-    def get_dummy_value(
-        canonical_param_type: Type[CanonicalParamType]
-    ) -> CanonicalParamType:
+    @classmethod
+    @abstractmethod
+    def annotation_str(cls) -> str:
+        """
+        A string representation of this class when used as a type hint /
+        parameter annotation.
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def get_dummy_value(cls) -> CanonicalParamType:
         """
         Get a default instantiation of the canonical parameter type (e.g. `0`
         for int, `()` for tuple, etc).
         """
-        return canonical_param_type.__new__(canonical_param_type)
+        T = cls._get_canonical_param_type()
+        return T.__new__(T)
 
     @classmethod
-    def get_populated_instance(
-        cls,
-        canonical_param_type: Type[CanonicalParamType],
-        value: CanonicalParamType,
-    ):
+    def get_populated_instance(cls, value: CanonicalParamType):
         """
         Get an instantiation of a subclass of the canonical parameter type,
         populated with a given value.
@@ -130,15 +110,24 @@ class ValidatedArgument(
 
             return canonical_param_type.__new__(cls, [custom args and kwargs]),
 
-        where the custom (keyword) arguments ensure that the instance is
-        populated with the given value. Also make sure that the overriding
-        method is annotated as a class method!
+        where the custom arguments ensure that the instance is populated with
+        the given value. Also make sure that the overriding method is annotated
+        as a class method!
         """
-        return canonical_param_type.__new__(cls, value)
+        T = cls._get_canonical_param_type()
+        return T.__new__(cls, value)
 
     @classmethod
-    def is_subclass(cls, object: Any) -> bool:
-        return isclass(object) and issubclass(object, cls)
+    def _get_canonical_param_type(cls) -> CanonicalParamType:
+        """
+        Find the type with which ValidatedArgument was parametrised (i.e. the
+        `str` in `ValidatedArgument[str]`)
+        """
+        # Note: will this work with subclasses of subclasses
+        # (e.g. ValidatedArgument -> Tensor -> Vector)?
+        validatable_type = cls.__orig_bases__[0]
+        canonical_param_type = validatable_type.__args__[0]
+        return canonical_param_type
 
 
 def either(*options):
@@ -146,9 +135,13 @@ def either(*options):
     Checks whether the function argument matches one of the given options.
     """
 
-    class Choice(ValidatedArgument[object]):
+    class Choice(ValidatedArgument[Any]):
 
         options_: Tuple[Any, ...] = options
+
+        @classmethod
+        def annotation_str(cls):
+            return f"One of {set(options)}"
 
         @classmethod
         def cast(cls, argument: Any):
@@ -159,7 +152,7 @@ def either(*options):
             return argument
 
         @classmethod
-        def get_populated_instance(cls, canonical_param_type, value):
+        def get_populated_instance(cls, value):
             obj = object.__new__(cls)
             obj.value = value
             return obj
@@ -173,7 +166,7 @@ def either(*options):
         @staticmethod
         def value_matches_option(value: Any, option: Any) -> bool:
             """ Whether a value is a valid input for an option. """
-            if ValidatedArgument.is_subclass(option):
+            if util.is_of_type(option, ValidatedArgument):
                 return option(value).is_valid()
             elif util.is_literal(option):
                 return value == option

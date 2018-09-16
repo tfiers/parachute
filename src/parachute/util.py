@@ -1,8 +1,9 @@
-import inspect
 import typing
+from inspect import isclass
 from typing import Callable, Any, Type
 
 import typeguard
+from parachute.validators.base import ValidatedArgument
 
 
 def is_literal(value: Any) -> bool:
@@ -10,12 +11,11 @@ def is_literal(value: Any) -> bool:
 
 
 def is_type(value: Any) -> bool:
-    return is_python_type(value) or is_typing_type(value)
-
-
-def is_python_type(value: Any) -> bool:
-    """ Whether a value is a python `type`, such as `bool` or `str`."""
-    return type(value) == type
+    """
+    Whether a value is a python `type`, such as `bool` or `str`, a custom
+    defined class, or one of the types from the `typing` module.
+    """
+    return isclass(value) or is_typing_type(value)
 
 
 def is_typing_type(value: Any) -> bool:
@@ -36,14 +36,17 @@ def is_of_type(value: Any, ttype: Type) -> bool:
     Returns whether a value is of a given type.
     """
     if is_type(ttype):
-        # Defer to the "typeguard" package:
-        try:
-            typeguard.check_type("value", value, expected_type=ttype)
-            return True
-        except TypeError:
-            return False
+        if ttype == ValidatedArgument:
+            return isclass(value) and issubclass(value, ValidatedArgument)
+        else:
+            # Defer to the "typeguard" package:
+            try:
+                typeguard.check_type("value", value, expected_type=ttype)
+                return True
+            except TypeError:
+                return False
     else:
-        msg = f"Argument `ttype` must be a type, but got {_repr(ttype)}."
+        msg = f"Argument `ttype` must be a type, but got {pretty_str(ttype)}."
         raise TypeError(msg)
 
 
@@ -97,14 +100,16 @@ def _trim_lines(string: str):
     return "\n".join(lines)
 
 
-def _repr(x: Any) -> str:
+def pretty_str(x: Any) -> str:
     """
     Formats a literal or a type for pretty printing.
     """
-    if type(x) == type:
+    if is_of_type(x, ValidatedArgument):
+        text = x.annotation_str
+    elif type(x) == type:
         text = x.__name__
     elif type(x) == str:
         text = f'"{x}"'
     else:
-        text = repr(x)
+        text = pretty_str(x)
     return text

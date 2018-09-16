@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Union, Any, Type, Tuple, Generic, TypeVar
 
-from parachute import is_literal, is_python_type, is_typing_type
+from parachute import is_literal, is_type, is_typing_type
 
 
 def test_literal():
@@ -51,18 +51,18 @@ typing_types = (
 )
 
 
-def test_pythontypes():
+def test_is_type():
     for val in python_literals:
-        assert not is_python_type(val)
+        assert not is_type(val)
 
     for val in python_types:
-        assert is_python_type(val)
+        assert is_type(val)
 
     for val in typing_types:
-        assert not is_python_type(val)
+        assert is_type(val)
 
 
-def test_typing_types():
+def test_is_typing_type():
     for val in python_literals:
         assert not is_typing_type(val)
 
