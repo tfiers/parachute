@@ -13,7 +13,7 @@ def is_valid(value, Annotation) -> bool:
     """
     if Annotation is None:
         return True
-    elif isinstance(Annotation, ValidatedArgument):
+    elif ValidatedArgument.is_subclass(Annotation):
         return Annotation(value).is_valid()
     else:
         return is_of_type(value, Annotation)

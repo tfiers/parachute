@@ -136,6 +136,10 @@ class ValidatedArgument(
         """
         return canonical_param_type.__new__(cls, value)
 
+    @classmethod
+    def is_subclass(cls, object: Any) -> bool:
+        return isclass(object) and issubclass(object, cls)
+
 
 def either(*options):
     """
@@ -169,7 +173,7 @@ def either(*options):
         @staticmethod
         def value_matches_option(value: Any, option: Any) -> bool:
             """ Whether a value is a valid input for an option. """
-            if isclass(option) and issubclass(option, ValidatedArgument):
+            if ValidatedArgument.is_subclass(option):
                 return option(value).is_valid()
             elif util.is_literal(option):
                 return value == option
