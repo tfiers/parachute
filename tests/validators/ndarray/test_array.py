@@ -71,7 +71,7 @@ def test_ndim_2():
 
 def test_repr():
     Array = array(complex, ndim=2)
-    shape_str = shape((Arbitrary, Arbitrary)).short_str()
+    shape_str = shape((Arbitrary, Arbitrary)).get_short_str()
     expected_str = (
         "NumPy ndarray-like, with numeric type "
         "compatible to `complex`, "

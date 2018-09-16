@@ -24,7 +24,7 @@ def dimsize(spec: DimSizeSpec = Arbitrary):
         dimsize_spec = spec
 
         @classmethod
-        def short_str(cls) -> str:
+        def get_short_str(cls) -> str:
             if cls.dimsize_spec is Arbitrary:
                 return "arbitrary"
             else:
@@ -32,7 +32,7 @@ def dimsize(spec: DimSizeSpec = Arbitrary):
 
         @classmethod
         def get_annotation_str(cls) -> str:
-            return f"Array dimension size {cls.short_str()}."
+            return f"Array dimension size {cls.get_short_str()}."
 
         @classmethod
         def cast(cls, argument: Any):
@@ -72,19 +72,19 @@ def shape(spec: ShapeSpec = Arbitrary):
         shape_spec: ShapeSpec = spec
 
         @classmethod
-        def short_str(cls) -> str:
+        def get_short_str(cls) -> str:
             if cls.shape_spec == Arbitrary:
                 return "arbitrary"
             else:
                 tup = tuple(
-                    dimsize(dimsize_spec).short_str()
+                    dimsize(dimsize_spec).get_short_str()
                     for dimsize_spec in cls.shape_spec
                 )
                 return str(tup).replace("'", "")
 
         @classmethod
         def get_annotation_str(cls) -> str:
-            return f"Array shape {cls.short_str()}."
+            return f"Array shape {cls.get_short_str()}."
 
         @classmethod
         def cast(cls, argument: Any) -> ShapeType:
@@ -147,7 +147,7 @@ def array(
             return (
                 f"NumPy ndarray-like, with numeric type "
                 f"compatible to `{pretty_str(cls.dtype_)}`, "
-                f"and shape `{shape(cls.shape_spec_).short_str()}`."
+                f"and shape `{shape(cls.shape_spec_).get_short_str()}`."
             )
 
         @classmethod
