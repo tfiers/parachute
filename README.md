@@ -8,7 +8,7 @@ Neat input validation of function calls using Python's type hint system.
 Installation
 ------------
 ```
-pip install https://github.com/tfiers/parachute/archive/master.zip
+pip install git+https://github.com/tfiers/parachute#parachute
 ```
 
 
